@@ -253,7 +253,7 @@ pub fn gen<S: Into<String>>(text: S,
 /// A basic check:
 ///
 /// ```rust
-/// assert!(zalgo::is_zalgo( '҉'));
+/// assert!(zalgo::is_zalgo('҉'));
 ///
 /// // The following is simply a latin letter, and is not zalgo:
 /// assert!(!zalgo::is_zalgo('a'));
