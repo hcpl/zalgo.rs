@@ -1,5 +1,5 @@
-[travis-badge]: https://img.shields.io/travis/taiyaeix/zalgo.rs.svg?style=flat-square
-[travis]: https://travis-ci.org/taiyaeix/zalgo.rs
+[travis-badge]: https://img.shields.io/travis/zeyla/zalgo.rs.svg?style=flat-square
+[travis]: https://travis-ci.org/zeyla/zalgo.rs
 [license-badge]: https://img.shields.io/badge/license-ISC-blue.svg?style=flat-square
 [license]: https://opensource.org/licenses/ISC
 
@@ -52,5 +52,5 @@ To view more examples, check out the [examples] directory.
 
 License info in [LICENSE.md]. Long story short, ISC.
 
-[examples]: https://github.com/taiyaeix/zalgo.rs/tree/master/examples
-[LICENSE.md]: https://github.com/taiyaeix/zalgo.rs/blob/master/LICENSE.md
+[examples]: https://github.com/zeyla/zalgo.rs/tree/master/examples
+[LICENSE.md]: https://github.com/zeyla/zalgo.rs/blob/master/LICENSE.md

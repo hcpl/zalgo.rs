@@ -14,4 +14,4 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Initial commit.
 
-[Unreleased]: https://github.com/taiyaeix/zalgo.rs/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/zeyla/zalgo.rs/compare/v0.1.0...HEAD
