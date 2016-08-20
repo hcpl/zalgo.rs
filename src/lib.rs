@@ -51,6 +51,7 @@ extern crate rand;
 use rand::{thread_rng, Rng};
 
 /// A definition of the character type to be used for retrieval.
+#[derive(Copy, Clone, Debug, Hash, Eq, Ord, PartialEq, PartialOrd)]
 pub enum ZalgoKind {
     /// Denotes characters to be used to appear in the top of the resulting
     /// string.
@@ -64,6 +65,7 @@ pub enum ZalgoKind {
 }
 
 /// The size of the Zalgo text within the string to produce.
+#[derive(Copy, Clone, Debug, Hash, Eq, Ord, PartialEq, PartialOrd)]
 pub enum ZalgoSize {
     /// Produce a larger amount of Zalgo text.
     Maxi,
@@ -86,11 +88,11 @@ pub enum ZalgoSize {
 /// // You can then manually use this `Vec` for your own uses.
 /// ```
 pub fn all<'a>() -> Vec<char> {
-    let mut v: Vec<char> = vec![];
+    let mut v = vec![];
 
-    v.extend(chars(ZalgoKind::Up).iter().cloned());
-    v.extend(chars(ZalgoKind::Middle).iter().cloned());
-    v.extend(chars(ZalgoKind::Down).iter().cloned());
+    v.extend(chars(ZalgoKind::Up));
+    v.extend(chars(ZalgoKind::Middle));
+    v.extend(chars(ZalgoKind::Down));
 
     v
 }
@@ -177,66 +179,55 @@ pub fn gen<S: Into<String>>(text: S,
                             up: bool,
                             middle: bool,
                             down: bool,
-                            size: ZalgoSize) -> String {
-    // Convert the given `text` into a `String`. This allows the given text to
-    // also be a `str`.
-    let val: String = text.into();
+                            size: ZalgoSize)
+                            -> String {
+    let val = text.into();
 
     // The base String where the original text and new Zalgo text will be
     // appended to.
-    let mut result: String = String::new();
+    let mut result = String::new();
 
     let mut rng = thread_rng();
 
-    let max_up: usize = chars(ZalgoKind::Up).len();
-    let max_middle: usize = chars(ZalgoKind::Middle).len();
-    let max_down: usize = chars(ZalgoKind::Down).len();
+    let max_up = chars(ZalgoKind::Up).len();
+    let max_middle = chars(ZalgoKind::Middle).len();
+    let max_down = chars(ZalgoKind::Down).len();
 
     for ch in val.chars() {
-        // Skip the text if it's already a Zalgo `char`.
+        // Skip the text if it's already a Zalgo char
         if is_zalgo(ch) {
             continue;
         }
 
-        // Push the given character to the resultant string no matter what.
+        // Push the given character to the resultant string no matter what
         result.push(ch);
 
-        let mut count_up: usize = rng.gen_range(0, max_up);
-        let mut count_mid: usize = rng.gen_range(0, max_middle) / 2;
-        let mut count_down: usize = rng.gen_range(0, max_down);
-
-        match size {
-            ZalgoSize::Maxi => {
-                count_up = rng.gen_range(0, max_up);
-                count_mid = rng.gen_range(0, max_middle);
-                count_down = rng.gen_range(0, max_down);
-            },
-            ZalgoSize::Mini => {
-                count_up = rng.gen_range(0, max_up);
-                count_mid = rng.gen_range(0, max_middle);
-                count_down = rng.gen_range(0, max_down);
-            },
-            _ => {},
-        }
+        let count_up = rng.gen_range(0, max_up);
+        let count_mid = if size ==  ZalgoSize::None {
+            rng.gen_range(0, max_middle) / 2
+        } else {
+            rng.gen_range(0, max_middle)
+        };
+        let count_down = rng.gen_range(0, max_down);
 
         if up {
             for _ in 0..count_up {
                 let get = rng.gen_range(0, count_up);
-                result.push(chars(ZalgoKind::Up).get(get).unwrap().clone());
+                result.push(*chars(ZalgoKind::Up).get(get).unwrap());
             }
         }
 
         if middle {
             for _ in 0..count_mid {
                 let get = rng.gen_range(0, count_mid);
-                result.push(chars(ZalgoKind::Middle).get(get).unwrap().clone());
+                result.push(*chars(ZalgoKind::Middle).get(get).unwrap());
             }
         }
 
         if down {
             for _ in 0..count_down {
                 let get = rng.gen_range(0, count_down);
-                result.push(chars(ZalgoKind::Down).get(get).unwrap().clone());
+                result.push(*chars(ZalgoKind::Down).get(get).unwrap());
             }
         }
     }
