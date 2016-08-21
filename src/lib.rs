@@ -203,7 +203,7 @@ pub fn gen<S: Into<String>>(text: S,
         result.push(ch);
 
         let count_up = rng.gen_range(0, max_up);
-        let count_mid = if size ==  ZalgoSize::None {
+        let count_mid = if size == ZalgoSize::None {
             rng.gen_range(0, max_middle) / 2
         } else {
             rng.gen_range(0, max_middle)

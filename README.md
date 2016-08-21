@@ -2,12 +2,19 @@
 [travis]: https://travis-ci.org/zeyla/zalgo.rs
 [license-badge]: https://img.shields.io/badge/license-ISC-blue.svg?style=flat-square
 [license]: https://opensource.org/licenses/ISC
+[docs-badge]: https://img.shields.io/badge/docs-online-2020ff.svg
+[docs]: https://docs.austinhellyer.me/zalgo/
 
-[![travis-badge][]][travis] [![license-badge][]][license]
+[![travis-badge][]][travis] [![license-badge][]][license] [![travis-badge][]][docs]
+
 
 # zalgo.rs
 
 Rust crate for generating Zalgo text.
+
+This features both a library and a binary, which can be used via:
+
+`cargo run --bin zalgo test text`
 
 
 ### Zalgo
