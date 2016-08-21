@@ -5,7 +5,7 @@
 [docs-badge]: https://img.shields.io/badge/docs-online-2020ff.svg
 [docs]: https://docs.austinhellyer.me/zalgo/
 
-[![travis-badge][]][travis] [![license-badge][]][license] [![travis-badge][]][docs]
+[![travis-badge][]][travis] [![license-badge][]][license] [![docs-badge][]][docs]
 
 
 # zalgo.rs
