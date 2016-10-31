@@ -2,12 +2,12 @@
 authors = ["Austin Hellyer <hello@austinhellyer.me>"]
 description = "A crate for generating Zalgo text with defined parameters."
 documentation = "http://docs.austinhellyer.me/zalgo"
-homepage = "https://github.com/zeyla/zalgo.rs"
+homepage = "https://gitlab.com/kalasi/zalgo.rs"
 keywords = ["zalgo"]
 license = "ISC"
 name = "zalgo"
 readme = "README.md"
-repository = "https://github.com/zeyla/zalgo.rs.git"
+repository = "https://gitlab.com/kalasi/zalgo.rs.git"
 version = "0.1.1"
 
 [dependencies]

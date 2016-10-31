@@ -2,13 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-
 ## [Unreleased]
 
 ### Added
 
 ### Changed
-
 
 ## [0.1.1] - 2016-08-21
 
@@ -18,10 +16,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Optimized and simplified the codebase
 
-
 ## [0.1.0] - 2016-02-28
 
 Initial commit.
 
-[Unreleased]: https://github.com/zeyla/zalgo.rs/compare/v0.1.1...HEAD
-[0.1.1]: https://github.com/zeyla/zalgo.rs/compare/v0.1.0...v0.1.1
+[Unreleased]: https://gitlab.com/kalasi/zalgo.rs/compare/v0.1.1...master
+[0.1.1]: https://gitlab.com/kalasi/zalgo.rs/compare/v0.1.0...v0.1.1

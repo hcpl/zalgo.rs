@@ -1,12 +1,4 @@
-[travis-badge]: https://img.shields.io/travis/zeyla/zalgo.rs.svg?style=flat-square
-[travis]: https://travis-ci.org/zeyla/zalgo.rs
-[license-badge]: https://img.shields.io/badge/license-ISC-blue.svg?style=flat-square
-[license]: https://opensource.org/licenses/ISC
-[docs-badge]: https://img.shields.io/badge/docs-online-2020ff.svg
-[docs]: https://docs.austinhellyer.me/zalgo/
-
-[![travis-badge][]][travis] [![license-badge][]][license] [![docs-badge][]][docs]
-
+[![ci-badge][]][ci] [![license-badge][]][license] [![docs-badge][]][docs]
 
 # zalgo.rs
 
@@ -16,7 +8,6 @@ This features both a library and a binary, which can be used via:
 
 `cargo run --bin zalgo test text`
 
-
 ### Zalgo
 
 > Zalgo is an Internet legend about an ominous entity believed to cause
@@ -25,8 +16,7 @@ This features both a library and a binary, which can be used via:
 > scrambled text on webpages and photos of people whose eyes and mouth have been
 > covered in black.
 >
-> -- [knowyourmeme](http://knowyourmeme.com/memes/zalgo)
-
+> -- [knowyourmeme][kym]
 
 ### Installation
 
@@ -54,10 +44,16 @@ let text = zalgo::gen("test", true, false, true, ZalgoSize::Mini);
 
 To view more examples, check out the [examples] directory.
 
-
 ### License
 
 License info in [LICENSE.md]. Long story short, ISC.
 
-[examples]: https://github.com/zeyla/zalgo.rs/tree/master/examples
-[LICENSE.md]: https://github.com/zeyla/zalgo.rs/blob/master/LICENSE.md
+[ci]: https://gitlab.com/kalasi/zalgo.rs/pipelines
+[ci-badge]: https://gitlab.com/kalasi/zalgo.rs/badges/master/build.svg
+[docs]: https://docs.austinhellyer.me/zalgo/
+[docs-badge]: https://img.shields.io/badge/docs-online-2020ff.svg
+[examples]: https://gitlab.com/kalasi/zalgo.rs/tree/master/examples
+[kym]: http://knowyourmeme.com/memes/zalgo
+[LICENSE.md]: https://gitlab.com/kalasi/zalgo.rs/blob/master/LICENSE.md
+[license]: https://opensource.org/licenses/ISC
+[license-badge]: https://img.shields.io/badge/license-ISC-blue.svg?style=flat-square
