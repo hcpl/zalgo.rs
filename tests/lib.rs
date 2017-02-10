@@ -24,13 +24,6 @@ fn all() {
 }
 
 #[test]
-fn chars() {
-    assert!(zalgo::chars(ZalgoKind::Up).len() == 50);
-    assert!(zalgo::chars(ZalgoKind::Middle).len() == 23);
-    assert!(zalgo::chars(ZalgoKind::Down).len() == 40);
-}
-
-#[test]
 fn enums() {
     let _ = ZalgoKind::Up;
     let _ = ZalgoKind::Middle;
