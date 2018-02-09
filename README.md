@@ -48,12 +48,12 @@ To view more examples, check out the [examples] directory.
 
 License info in [LICENSE.md]. Long story short, ISC.
 
-[ci]: https://gitlab.com/kalasi/zalgo.rs/pipelines
-[ci-badge]: https://gitlab.com/kalasi/zalgo.rs/badges/master/build.svg
-[docs]: https://docs.austinhellyer.me/zalgo/
+[ci]: https://travis-ci.org/zeyla/zalgo.rs
+[ci-badge]: https://travis-ci.org/zeyla/zalgo.rs.svg?branch=master
+[docs]: https://docs.rs/zalgo
 [docs-badge]: https://img.shields.io/badge/docs-online-2020ff.svg
-[examples]: https://gitlab.com/kalasi/zalgo.rs/tree/master/examples
+[examples]: https://github.com/zeyla/zalgo.rs/tree/master/examples
 [kym]: http://knowyourmeme.com/memes/zalgo
-[LICENSE.md]: https://gitlab.com/kalasi/zalgo.rs/blob/master/LICENSE.md
+[LICENSE.md]: https://github.com/zeyla/zalgo.rs/blob/master/LICENSE.md
 [license]: https://opensource.org/licenses/ISC
 [license-badge]: https://img.shields.io/badge/license-ISC-blue.svg?style=flat-square
