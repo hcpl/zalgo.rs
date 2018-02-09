@@ -1,13 +1,13 @@
 [package]
-authors = ["Austin Hellyer <hello@austinhellyer.me>"]
+authors = ["Zeyla Hellyer <zeylahellyer@gmail.com>"]
 description = "A crate for generating Zalgo text with defined parameters."
-documentation = "http://docs.austinhellyer.me/zalgo"
-homepage = "https://gitlab.com/kalasi/zalgo.rs"
+documentation = "http://docs.rs/zalgo"
+homepage = "https://github.com/zeyla/zalgo.rs"
 keywords = ["zalgo"]
 license = "ISC"
 name = "zalgo"
 readme = "README.md"
-repository = "https://gitlab.com/kalasi/zalgo.rs.git"
+repository = "https://github.com/zeyla/zalgo.rs.git"
 version = "0.1.1"
 
 [dependencies]
