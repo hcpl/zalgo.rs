@@ -14,6 +14,8 @@
 // CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 // CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+#![cfg_attr(feature = "nightly", feature(exact_size_is_empty))]
+
 extern crate zalgo;
 
 use zalgo::{UP_CHARS, MIDDLE_CHARS, DOWN_CHARS, CharKind, Intensity};
@@ -34,6 +36,9 @@ fn all_chars() {
         let remaining = all_chars_count - i;
         assert_eq!(all_chars.len(), remaining);
         assert_eq!(all_chars.size_hint(), (remaining, Some(remaining)));
+        assert!(all_chars.len() > 0);
+        #[cfg(feature = "nightly")]
+        assert!(!all_chars.is_empty());
 
         let c = all_chars.next();
         assert!(c.is_some());
@@ -56,6 +61,9 @@ fn all_chars() {
 
     assert_eq!(all_chars.next(), None);
     assert_eq!(all_chars.next_back(), None);
+    assert_eq!(all_chars.len(), 0);
+    #[cfg(feature = "nightly")]
+    assert!(all_chars.is_empty());
 
     let mut all_chars = zalgo::all_chars();
 
@@ -63,6 +71,9 @@ fn all_chars() {
         let remaining = i + 1;
         assert_eq!(all_chars.len(), remaining);
         assert_eq!(all_chars.size_hint(), (remaining, Some(remaining)));
+        assert!(all_chars.len() > 0);
+        #[cfg(feature = "nightly")]
+        assert!(!all_chars.is_empty());
 
         let c = all_chars.next_back();
         assert!(c.is_some());
@@ -85,6 +96,9 @@ fn all_chars() {
 
     assert_eq!(all_chars.next(), None);
     assert_eq!(all_chars.next_back(), None);
+    assert_eq!(all_chars.len(), 0);
+    #[cfg(feature = "nightly")]
+    assert!(all_chars.is_empty());
 }
 
 #[test]

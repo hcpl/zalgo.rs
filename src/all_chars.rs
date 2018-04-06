@@ -1,3 +1,6 @@
+#[cfg(feature = "nightly")]
+use std::iter;
+
 use {UP_CHARS, MIDDLE_CHARS, DOWN_CHARS};
 
 
@@ -41,9 +44,7 @@ impl Iterator for AllChars {
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        let hint = self.pos_back - self.pos;
-
-        (hint, Some(hint))
+        (self.len(), Some(self.len()))
     }
 
     fn count(self) -> usize {
@@ -87,9 +88,14 @@ impl Iterator for AllChars {
 
 impl ExactSizeIterator for AllChars {
     fn len(&self) -> usize {
-        let (lower, upper) = self.size_hint();
-        debug_assert_eq!(upper, Some(lower));
-        lower
+        debug_assert!(self.pos <= self.pos_back);
+        self.pos_back - self.pos
+    }
+
+    #[cfg(feature = "nightly")]
+    fn is_empty(&self) -> bool {
+        debug_assert!(self.pos <= self.pos_back);
+        self.pos == self.pos_back
     }
 }
 
@@ -123,3 +129,9 @@ impl DoubleEndedIterator for AllChars {
         unreachable!();
     }
 }
+
+#[cfg(feature = "nightly")]
+unsafe impl iter::TrustedLen for AllChars {}
+
+#[cfg(any(feature = "nightly", stable_fused_iterator))]
+impl iter::FusedIterator for AllChars {}

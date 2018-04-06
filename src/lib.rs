@@ -46,6 +46,12 @@
 //! let result = zalgo::gen("my string", CharKind::UP, Intensity::Maxi);
 //! ```
 
+#![cfg_attr(feature = "nightly", feature(
+    exact_size_is_empty,
+    fused,
+    trusted_len,
+))]
+
 #[macro_use]
 extern crate bitflags;
 extern crate rand;
