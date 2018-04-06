@@ -51,15 +51,26 @@
 //!
 //! - **`std`** *(enabled by default)* — `libstd` support. If disabled, `zalgo`
 //!   will use `libcore` instead.
+//! - **`alloc`** — `liballoc` support which provides heap-allocated facilities
+//!   (currently requires nightly rustc). Enable this to use functions that
+//!   operate on `String`s and don't depend on std-only capabilities like
+//!   thread-local RNGs when `std` is disabled.
 //! - **`nightly`** — Access to unstable features available on nightly
 //!   compilers.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![cfg_attr(all(feature = "alloc", not(feature = "std")), feature(alloc))]
 #![cfg_attr(feature = "nightly", feature(
     exact_size_is_empty,
     fused,
     trusted_len,
 ))]
+
+#[cfg(feature = "std")]
+extern crate std as core;
+
+#[cfg(all(feature = "alloc", not(feature = "std")))]
+extern crate alloc;
 
 #[macro_use]
 extern crate bitflags;
@@ -71,8 +82,13 @@ pub use all_chars::{AllChars, all_chars};
 mod apply_rng_iter;
 pub use apply_rng_iter::{ApplyRngIter, apply_rng_iter};
 
+#[cfg(all(feature = "alloc", not(feature = "std")))]
+use alloc::String;
+
+#[cfg(any(feature = "std", feature = "alloc"))]
+use rand::Rng;
 #[cfg(feature = "std")]
-use rand::{Rng, ThreadRng, thread_rng};
+use rand::{ThreadRng, thread_rng};
 
 
 pub static DESCRIPTION: &str = "\
@@ -204,7 +220,8 @@ pub fn apply(text: &str, kind: CharKind, intensity: Intensity) -> String {
 /// The amount of Zalgo text can be (more or less) defined by the value of the
 /// `intensity` given. Read on the [`Intensity`] for more information.
 ///
-/// *This function is available if Zalgo is built with the `"std"` feature.*
+/// *This function is available if Zalgo is built with the `"std"` or `"alloc"`
+/// feature.*
 ///
 /// # Examples
 ///
@@ -277,7 +294,7 @@ pub fn apply(text: &str, kind: CharKind, intensity: Intensity) -> String {
 /// ```
 ///
 /// [`Intensity`]: enum.Intensity.html
-#[cfg(feature = "std")]
+#[cfg(any(feature = "std", feature = "alloc"))]
 pub fn apply_rng<R: Rng>(
     rng: R,
     text: &str,

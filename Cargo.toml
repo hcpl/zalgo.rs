@@ -28,5 +28,6 @@ required-features = ["std"]
 
 [features]
 default = ["std"]
-nightly = []
 std = ["rand/std"]
+alloc = []
+nightly = []
