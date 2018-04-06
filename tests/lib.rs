@@ -16,11 +16,75 @@
 
 extern crate zalgo;
 
-use zalgo::{CharKind, Intensity};
+use zalgo::{UP_CHARS, MIDDLE_CHARS, DOWN_CHARS, CharKind, Intensity};
 
 #[test]
-fn all() {
-    assert!(zalgo::all().len() == 113);
+fn all_chars() {
+    let all_chars_count = 113;
+
+    assert_eq!(UP_CHARS.len() + MIDDLE_CHARS.len() + DOWN_CHARS.len(), all_chars_count);
+    assert_eq!(zalgo::all_chars().len(), all_chars_count);
+    assert_eq!(zalgo::all_chars().count(), all_chars_count);
+    assert_eq!(zalgo::all_chars().size_hint(), (all_chars_count, Some(all_chars_count)));
+    assert_eq!(zalgo::all_chars().last(), DOWN_CHARS.last().cloned());
+
+    let mut all_chars = zalgo::all_chars();
+
+    for i in 0..all_chars_count {
+        let remaining = all_chars_count - i;
+        assert_eq!(all_chars.len(), remaining);
+        assert_eq!(all_chars.size_hint(), (remaining, Some(remaining)));
+
+        let c = all_chars.next();
+        assert!(c.is_some());
+
+        let actual_c = if i < UP_CHARS.len() {
+            UP_CHARS[i]
+        } else if i - UP_CHARS.len() < MIDDLE_CHARS.len() {
+            MIDDLE_CHARS[i - UP_CHARS.len()]
+        } else if i - UP_CHARS.len() - MIDDLE_CHARS.len() < DOWN_CHARS.len() {
+            DOWN_CHARS[i - UP_CHARS.len() - MIDDLE_CHARS.len()]
+        } else {
+            panic!("Shouldn't happen");
+        };
+
+        assert_eq!(c, Some(actual_c));
+
+        assert_eq!(all_chars.len(), remaining - 1);
+        assert_eq!(all_chars.size_hint(), (remaining - 1, Some(remaining - 1)));
+    }
+
+    assert_eq!(all_chars.next(), None);
+    assert_eq!(all_chars.next_back(), None);
+
+    let mut all_chars = zalgo::all_chars();
+
+    for i in (0..all_chars_count).rev() {
+        let remaining = i + 1;
+        assert_eq!(all_chars.len(), remaining);
+        assert_eq!(all_chars.size_hint(), (remaining, Some(remaining)));
+
+        let c = all_chars.next_back();
+        assert!(c.is_some());
+
+        let actual_c = if i < UP_CHARS.len() {
+            UP_CHARS[i]
+        } else if i - UP_CHARS.len() < MIDDLE_CHARS.len() {
+            MIDDLE_CHARS[i - UP_CHARS.len()]
+        } else if i - UP_CHARS.len() - MIDDLE_CHARS.len() < DOWN_CHARS.len() {
+            DOWN_CHARS[i - UP_CHARS.len() - MIDDLE_CHARS.len()]
+        } else {
+            panic!("Shouldn't happen");
+        };
+
+        assert_eq!(c, Some(actual_c));
+
+        assert_eq!(all_chars.len(), remaining - 1);
+        assert_eq!(all_chars.size_hint(), (remaining - 1, Some(remaining - 1)));
+    }
+
+    assert_eq!(all_chars.next(), None);
+    assert_eq!(all_chars.next_back(), None);
 }
 
 #[test]

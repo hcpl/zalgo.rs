@@ -50,7 +50,11 @@
 extern crate bitflags;
 extern crate rand;
 
+mod all_chars;
+pub use all_chars::{AllChars, all_chars};
+
 use rand::{thread_rng, Rng};
+
 
 pub static DESCRIPTION: &str = "\
     To invoke the hive-mind representing chaos.\n\
@@ -104,28 +108,6 @@ pub enum Intensity {
     Mini,
     /// Produce a randomized amount of Zalgo text.
     None,
-}
-
-/// Produces a `Vec` of the combined kinds of Zalgo `char`s. This is all of the
-/// `char`s used to create a generated Zalgo `String`.
-///
-/// # Examples
-///
-/// A basic usage:
-///
-/// ```rust
-/// let _ = zalgo::all();
-///
-/// // You can then manually use this `Vec` for your own uses.
-/// ```
-pub fn all() -> Vec<char> {
-    let mut v = vec![];
-
-    v.extend(UP_CHARS.iter());
-    v.extend(MIDDLE_CHARS.iter());
-    v.extend(DOWN_CHARS.iter());
-
-    v
 }
 
 /// Generates a String containing Zalgo text. This is customizable via defining
@@ -329,5 +311,5 @@ pub fn gen_rng<S: Into<String>, R: Rng>(
 /// assert!(!zalgo::is_zalgo('a'));
 /// ```
 pub fn is_zalgo(ch: char) -> bool {
-    all().contains(&ch)
+    all_chars().find(|c| *c == ch).is_some()
 }
