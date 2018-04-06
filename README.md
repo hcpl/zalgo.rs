@@ -37,9 +37,9 @@ extern crate zalgo;
 Generate Zalgo text with up/down (no middle) and mini definitions:
 
 ```rust
-use zalgo::{ZalgoKind, ZalgoSize};
+use zalgo::{CharKind, Intensity};
 
-let text = zalgo::gen("test", ZalgoKind::UP | ZalgoKind::DOWN, ZalgoSize::Mini);
+let text = zalgo::gen("test", CharKind::UP | CharKind::DOWN, Intensity::Mini);
 ```
 
 To view more examples, check out the [examples] directory.

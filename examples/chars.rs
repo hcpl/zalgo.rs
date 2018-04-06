@@ -4,8 +4,8 @@ extern crate zalgo;
 // the 'top' characters or 'middle' characters.
 fn main() {
     // Retrieve all characters used for the 'top' of the resultant string.
-    let _ = zalgo::ZALGO_UP;
+    let _ = zalgo::UP_CHARS;
 
     // Retrieve all characters used for the 'middle' of the resultant string.
-    let _ = zalgo::ZALGO_MIDDLE;
+    let _ = zalgo::MIDDLE_CHARS;
 }

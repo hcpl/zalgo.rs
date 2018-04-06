@@ -1,7 +1,7 @@
 extern crate zalgo;
 
 use std::env;
-use zalgo::{ZalgoKind, ZalgoSize};
+use zalgo::{CharKind, Intensity};
 
 // A bin for generating a binary that can take text as an input and output
 // zalgo'd text.
@@ -17,7 +17,7 @@ fn main() {
         .collect();
     let text: String = args.join(" ");
 
-    let output: String = zalgo::gen(text, ZalgoKind::UP | ZalgoKind::DOWN, ZalgoSize::Mini);
+    let output: String = zalgo::gen(text, CharKind::UP | CharKind::DOWN, Intensity::Mini);
 
     println!("{}", output);
 }

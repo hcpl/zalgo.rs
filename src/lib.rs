@@ -41,9 +41,9 @@
 //! with a high amount of Zalgo text is:
 //!
 //! ```rust
-//! use zalgo::{ZalgoKind, ZalgoSize};
+//! use zalgo::{CharKind, Intensity};
 //!
-//! let result = zalgo::gen("my string", ZalgoKind::UP, ZalgoSize::Maxi);
+//! let result = zalgo::gen("my string", CharKind::UP, Intensity::Maxi);
 //! ```
 
 #[macro_use]
@@ -51,19 +51,19 @@ extern crate bitflags;
 extern crate rand;
 
 /// Denotes characters to be used in the "upper" part of text.
-pub static ZALGO_UP: [char; 50] = [
+pub static UP_CHARS: [char; 50] = [
     '̍', '̎', '̄', '̅', '̿', '̑', '̆', '̐', '͒', '͗', '͑', '̇', '̈', '̊',
     '͂', '̓', '̈́', '͊', '͋', '͌', '̃', '̂', '̌', '͐', '̀', '́', '̋', '̏',
     '̒', '̓', '̔', '̽', '̉', 'ͣ', 'ͤ', 'ͥ', 'ͦ', 'ͧ', 'ͨ', 'ͩ', 'ͪ', 'ͫ',
     'ͬ', 'ͭ', 'ͮ', 'ͯ', '̾', '͛', '͆', '̚',
 ];
 /// Denotes characters to be used in the "middle" part of text.
-pub static ZALGO_MIDDLE: [char; 23] = [
+pub static MIDDLE_CHARS: [char; 23] = [
     '̕', '̛', '̀', '́', '͘', '̡', '̢', '̧', '̨', '̴', '̵', '̶', '͏', '͜',
     '͝', '͞', '͟', '͠', '͢', '̸', '̷', '͡', '҉',
 ];
 /// Denotes characters to be used in the "bottom" part of text.
-pub static ZALGO_DOWN: [char; 40] = [
+pub static DOWN_CHARS: [char; 40] = [
     '̖', '̗', '̘', '̙', '̜', '̝', '̞', '̟', '̠', '̤', '̥', '̦', '̩', '̪',
     '̫', '̬', '̭', '̮', '̯', '̰', '̱', '̲', '̳', '̹', '̺', '̻', '̼', 'ͅ',
     '͇', '͈', '͉', '͍', '͎', '͓', '͔', '͕', '͖', '͙', '͚', '̣',
@@ -73,7 +73,7 @@ use rand::{thread_rng, Rng};
 
 bitflags! {
     /// A definition of the character type to be used for retrieval.
-    pub struct ZalgoKind: u8 {
+    pub struct CharKind: u8 {
         /// Denotes characters to be used to appear in the top of the resulting
         /// string.
         const UP     = 0b00000001;
@@ -86,9 +86,9 @@ bitflags! {
     }
 }
 
-/// The size of the Zalgo text within the string to produce.
+/// The intensity of the Zalgo text within the string to produce.
 #[derive(Copy, Clone, Debug, Hash, Eq, Ord, PartialEq, PartialOrd)]
-pub enum ZalgoSize {
+pub enum Intensity {
     /// Produce a larger amount of Zalgo text.
     Maxi,
     /// Produce a smaller amount of Zalgo text.
@@ -112,9 +112,9 @@ pub enum ZalgoSize {
 pub fn all() -> Vec<char> {
     let mut v = vec![];
 
-    v.extend(ZALGO_UP.iter());
-    v.extend(ZALGO_MIDDLE.iter());
-    v.extend(ZALGO_DOWN.iter());
+    v.extend(UP_CHARS.iter());
+    v.extend(MIDDLE_CHARS.iter());
+    v.extend(DOWN_CHARS.iter());
 
     v
 }
@@ -124,7 +124,7 @@ pub fn all() -> Vec<char> {
 /// and below it.
 ///
 /// The amount of Zalgo text can be (more or less) defined by the value of the
-/// `size` given. Read on the `ZalgoSize` for more information.
+/// `intensity` given. Read on the `Intensity` for more information.
 ///
 /// # Examples
 ///
@@ -132,38 +132,38 @@ pub fn all() -> Vec<char> {
 /// of Zalgo:
 ///
 /// ```rust
-/// use zalgo::{ZalgoKind, ZalgoSize};
+/// use zalgo::{CharKind, Intensity};
 ///
-/// let _ = zalgo::gen("test", ZalgoKind::all(), ZalgoSize::Maxi);
+/// let _ = zalgo::gen("test", CharKind::all(), Intensity::Maxi);
 /// ```
 ///
 /// Create Zalgo text with Zalgo `char`s in only the middle and lower positions,
 /// with a minimum amount of Zalgo:
 ///
 /// ```rust
-/// use zalgo::{ZalgoKind, ZalgoSize};
+/// use zalgo::{CharKind, Intensity};
 ///
-/// let _ = zalgo::gen("test", ZalgoKind::MIDDLE | ZalgoKind::DOWN, ZalgoSize::Mini);
+/// let _ = zalgo::gen("test", CharKind::MIDDLE | CharKind::DOWN, Intensity::Mini);
 /// ```
 ///
 /// Create Zalgo text with Zalgo `char`s in only the lower position, with a
 /// random amount of Zalgo (can be a low amount or high amount):
 ///
 /// ```rust
-/// use zalgo::{ZalgoKind, ZalgoSize};
+/// use zalgo::{CharKind, Intensity};
 ///
-/// let _ = zalgo::gen("test", ZalgoKind::DOWN, ZalgoSize::None);
+/// let _ = zalgo::gen("test", CharKind::DOWN, Intensity::None);
 /// ```
 ///
 /// Consequentially, you can also not modify your given text with any Zalgo:
 ///
 /// ```rust
-/// use zalgo::{ZalgoKind, ZalgoSize};
+/// use zalgo::{CharKind, Intensity};
 ///
-/// let _ = zalgo::gen("test", ZalgoKind::empty(), ZalgoSize::None);
-/// // Technically the `ZalgoSize` value given does not matter here.
+/// let _ = zalgo::gen("test", CharKind::empty(), Intensity::None);
+/// // Technically the `Intensity` value given does not matter here.
 /// ```
-pub fn gen<S: Into<String>>(text: S, kind: ZalgoKind, size: ZalgoSize) -> String {
+pub fn gen<S: Into<String>>(text: S, kind: CharKind, intensity: Intensity) -> String {
     let val = text.into();
 
     // The base String where the original text and new Zalgo text will be
@@ -181,32 +181,32 @@ pub fn gen<S: Into<String>>(text: S, kind: ZalgoKind, size: ZalgoSize) -> String
         // Push the given character to the resultant string no matter what
         result.push(ch);
 
-        let count_up = rng.gen_range(0, ZALGO_UP.len());
-        let count_mid = if size == ZalgoSize::None {
-            rng.gen_range(0, ZALGO_MIDDLE.len()) / 2
+        let count_up = rng.gen_range(0, UP_CHARS.len());
+        let count_mid = if intensity == Intensity::None {
+            rng.gen_range(0, MIDDLE_CHARS.len()) / 2
         } else {
-            rng.gen_range(0, ZALGO_MIDDLE.len())
+            rng.gen_range(0, MIDDLE_CHARS.len())
         };
-        let count_down = rng.gen_range(0, ZALGO_DOWN.len());
+        let count_down = rng.gen_range(0, DOWN_CHARS.len());
 
-        if kind.contains(ZalgoKind::UP) {
+        if kind.contains(CharKind::UP) {
             for _ in 0..count_up {
                 let get = rng.gen_range(0, count_up);
-                result.push(ZALGO_UP[get]);
+                result.push(UP_CHARS[get]);
             }
         }
 
-        if kind.contains(ZalgoKind::MIDDLE) {
+        if kind.contains(CharKind::MIDDLE) {
             for _ in 0..count_mid {
                 let get = rng.gen_range(0, count_mid);
-                result.push(ZALGO_MIDDLE[get]);
+                result.push(MIDDLE_CHARS[get]);
             }
         }
 
-        if kind.contains(ZalgoKind::DOWN) {
+        if kind.contains(CharKind::DOWN) {
             for _ in 0..count_down {
                 let get = rng.gen_range(0, count_down);
-                result.push(ZALGO_DOWN[get]);
+                result.push(DOWN_CHARS[get]);
             }
         }
     }
