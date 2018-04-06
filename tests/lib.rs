@@ -102,7 +102,7 @@ fn all_chars() {
 }
 
 #[test]
-fn bitflags() {
+fn char_kind() {
     let empty = CharKind::empty();
 
     let up = CharKind::UP;
@@ -156,43 +156,53 @@ fn bitflags() {
 }
 
 #[test]
-fn enums() {
-    let _ = Intensity::Maxi;
+fn intensity() {
     let _ = Intensity::Mini;
-    let _ = Intensity::None;
+    let _ = Intensity::Normal;
+    let _ = Intensity::Maxi;
+    let _ = Intensity::Random;
 }
 
 #[test]
-fn gen() {
+fn apply() {
     // It's not really possible to test the outputs, so just test whether they
     // work or not.
-    let _ = zalgo::gen("t", CharKind::from_bits(0b000).unwrap(), Intensity::Mini);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b001).unwrap(), Intensity::Mini);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b010).unwrap(), Intensity::Mini);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b100).unwrap(), Intensity::Mini);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b011).unwrap(), Intensity::Mini);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b101).unwrap(), Intensity::Mini);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b110).unwrap(), Intensity::Mini);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b111).unwrap(), Intensity::Mini);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b000).unwrap(), Intensity::Mini);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b001).unwrap(), Intensity::Mini);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b010).unwrap(), Intensity::Mini);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b100).unwrap(), Intensity::Mini);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b011).unwrap(), Intensity::Mini);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b101).unwrap(), Intensity::Mini);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b110).unwrap(), Intensity::Mini);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b111).unwrap(), Intensity::Mini);
 
-    let _ = zalgo::gen("t", CharKind::from_bits(0b000).unwrap(), Intensity::Maxi);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b001).unwrap(), Intensity::Maxi);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b010).unwrap(), Intensity::Maxi);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b100).unwrap(), Intensity::Maxi);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b011).unwrap(), Intensity::Maxi);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b101).unwrap(), Intensity::Maxi);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b110).unwrap(), Intensity::Maxi);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b111).unwrap(), Intensity::Maxi);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b000).unwrap(), Intensity::Normal);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b001).unwrap(), Intensity::Normal);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b010).unwrap(), Intensity::Normal);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b100).unwrap(), Intensity::Normal);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b011).unwrap(), Intensity::Normal);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b101).unwrap(), Intensity::Normal);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b110).unwrap(), Intensity::Normal);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b111).unwrap(), Intensity::Normal);
 
-    let _ = zalgo::gen("t", CharKind::from_bits(0b000).unwrap(), Intensity::None);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b001).unwrap(), Intensity::None);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b010).unwrap(), Intensity::None);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b100).unwrap(), Intensity::None);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b011).unwrap(), Intensity::None);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b101).unwrap(), Intensity::None);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b110).unwrap(), Intensity::None);
-    let _ = zalgo::gen("t", CharKind::from_bits(0b111).unwrap(), Intensity::None);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b000).unwrap(), Intensity::Maxi);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b001).unwrap(), Intensity::Maxi);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b010).unwrap(), Intensity::Maxi);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b100).unwrap(), Intensity::Maxi);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b011).unwrap(), Intensity::Maxi);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b101).unwrap(), Intensity::Maxi);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b110).unwrap(), Intensity::Maxi);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b111).unwrap(), Intensity::Maxi);
+
+    let _ = zalgo::apply("t", CharKind::from_bits(0b000).unwrap(), Intensity::Random);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b001).unwrap(), Intensity::Random);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b010).unwrap(), Intensity::Random);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b100).unwrap(), Intensity::Random);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b011).unwrap(), Intensity::Random);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b101).unwrap(), Intensity::Random);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b110).unwrap(), Intensity::Random);
+    let _ = zalgo::apply("t", CharKind::from_bits(0b111).unwrap(), Intensity::Random);
 
     // Test that passing a String works.
-    let _ = zalgo::gen(String::from("t"), CharKind::empty(), Intensity::None);
+    let _ = zalgo::apply(&String::from("t"), CharKind::empty(), Intensity::Random);
 }

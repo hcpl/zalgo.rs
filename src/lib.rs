@@ -43,7 +43,7 @@
 //! ```rust
 //! use zalgo::{CharKind, Intensity};
 //!
-//! let result = zalgo::gen("my string", CharKind::UP, Intensity::Maxi);
+//! let result = zalgo::apply("my string", CharKind::UP, Intensity::Maxi);
 //! ```
 
 #![cfg_attr(feature = "nightly", feature(
@@ -108,12 +108,14 @@ bitflags! {
 /// The intensity of the Zalgo text within the string to produce.
 #[derive(Copy, Clone, Debug, Hash, Eq, Ord, PartialEq, PartialOrd)]
 pub enum Intensity {
-    /// Produce a larger amount of Zalgo text.
-    Maxi,
     /// Produce a smaller amount of Zalgo text.
     Mini,
+    /// Produce a normal amount of Zalgo text.
+    Normal,
+    /// Produce a larger amount of Zalgo text.
+    Maxi,
     /// Produce a randomized amount of Zalgo text.
-    None,
+    Random,
 }
 
 /// Generates a String containing Zalgo text. This is customizable via defining
@@ -127,7 +129,7 @@ pub enum Intensity {
 ///
 /// This function uses [`rand::thread_rng`] under the hood which contiributes to
 /// its non-determinism. For reproducible results (such as when performing
-/// tests) or when other random generator is needed use [`gen_rng`] instead and
+/// tests) or when other random generator is needed use [`apply_rng`] instead and
 /// provide it a random generator of your choice.
 ///
 /// # Examples
@@ -138,7 +140,7 @@ pub enum Intensity {
 /// ```rust
 /// use zalgo::{CharKind, Intensity};
 ///
-/// let _ = zalgo::gen("test", CharKind::all(), Intensity::Maxi);
+/// let _ = zalgo::apply("test", CharKind::all(), Intensity::Maxi);
 /// ```
 ///
 /// Create Zalgo text with Zalgo `char`s in only the middle and lower positions,
@@ -147,7 +149,7 @@ pub enum Intensity {
 /// ```rust
 /// use zalgo::{CharKind, Intensity};
 ///
-/// let _ = zalgo::gen("test", CharKind::MIDDLE | CharKind::DOWN, Intensity::Mini);
+/// let _ = zalgo::apply("test", CharKind::MIDDLE | CharKind::DOWN, Intensity::Mini);
 /// ```
 ///
 /// Create Zalgo text with Zalgo `char`s in only the lower position, with a
@@ -156,7 +158,7 @@ pub enum Intensity {
 /// ```rust
 /// use zalgo::{CharKind, Intensity};
 ///
-/// let _ = zalgo::gen("test", CharKind::DOWN, Intensity::None);
+/// let _ = zalgo::apply("test", CharKind::DOWN, Intensity::Random);
 /// ```
 ///
 /// Consequentially, you can also not modify your given text with any Zalgo:
@@ -164,17 +166,17 @@ pub enum Intensity {
 /// ```rust
 /// use zalgo::{CharKind, Intensity};
 ///
-/// let _ = zalgo::gen("test", CharKind::empty(), Intensity::None);
+/// let _ = zalgo::apply("test", CharKind::empty(), Intensity::Random);
 /// // Technically the `Intensity` value given does not matter here.
 /// ```
 ///
 /// [`rand::thread_rng`]: https://docs.rs/rand/^0.4/rand/fn.thread_rng.html
-/// [`gen_rng`]: fn.gen_rng.html
-pub fn gen<S: Into<String>>(text: S, kind: CharKind, intensity: Intensity) -> String {
-    gen_rng(&mut thread_rng(), text, kind, intensity)
+/// [`apply_rng`]: fn.apply_rng.html
+pub fn apply(text: &str, kind: CharKind, intensity: Intensity) -> String {
+    apply_rng(&mut thread_rng(), text, kind, intensity)
 }
 
-/// Version of [`gen`] function generic over [`rand::Rng`].
+/// Version of [`apply`] function generic over [`rand::Rng`].
 ///
 /// # Examples
 ///
@@ -189,9 +191,9 @@ pub fn gen<S: Into<String>>(text: S, kind: CharKind, intensity: Intensity) -> St
 ///
 /// # fn main() {
 /// let mut rng = IsaacRng::new_unseeded();
-/// let s = zalgo::gen_rng(&mut rng, "test", CharKind::all(), Intensity::Maxi);
+/// let s = zalgo::apply_rng(&mut rng, "test", CharKind::all(), Intensity::Maxi);
 ///
-/// assert_eq!(s, "t̡̢̢̡̡̢̂͊̿̌̊̄̑̅͗͒̂̆̐̎̂͒̍̄͊͑̿̈͌͘̕͏̢̧̛̹̘̪̫̝̞̝͉̤̱̝̠̼̘̼͉̤̝̗͎̳̮̰̤͇͎͍̝̥̜̮̖̀́ͅͅę̵̶̵̷̶̶̢̛̜̞̠̜̜̗̝̞̤̤̖͂͗̈̓͗̿͂͋͊̅͒̇̆̑̎͂̿͑͒̀́́́́̕͘͢͟͢͠͝͞s̡̰̮̙̱̳̼̹̭̗̪̻̖̱̬̲̥̘̝̹̲̫̱̞̪̳̳̺̎͗͒͂̑̈͂̐̊̐̇̓̇̓̍̐̅̎͗̀̀̀́̕ţ̴̡̧̧̄̅̅̐̍̐̄̅́̕̕͞͝͏̢̤̟̤̜̟̜̤̘̖̜̗̜̙̀̀͜͝͞͞");
+/// assert_eq!(s, "ţ̸̫͖̗̰̖̭̣̱͇̓͌̓̄ͨ͊̚ȇ͛͑͏̸̳̜͙͚͍̥̀ş̴̨̝̜̳̫͉͉̯̤̺̮̘͖̫͒ͧ̽ͥ́̂͂͆͋̆̀̚ͅt̵̛͉̰̯̦͍̙̤͈̰̞͔̥͓̜͒̾ͣͧͦ͢");
 /// # }
 /// ```
 ///
@@ -206,9 +208,9 @@ pub fn gen<S: Into<String>>(text: S, kind: CharKind, intensity: Intensity) -> St
 ///
 /// # fn main() {
 /// let mut rng = IsaacRng::new_unseeded();
-/// let s = zalgo::gen_rng(&mut rng, "test", CharKind::MIDDLE | CharKind::DOWN, Intensity::Mini);
+/// let s = zalgo::apply_rng(&mut rng, "test", CharKind::MIDDLE | CharKind::DOWN, Intensity::Mini);
 ///
-/// assert_eq!(s, "t̵̨̢̛̛̛̛͈̼̜̗̙̮̖̖͉̲̯̳̻̞̗̯̘̘̯̥̪̙͓̹̘̪̫̝̞̝͉̤̱́́̕͘͘̕͜ͅe̘̫̭̤̰̟̞̜̟̮̲̥̘̙̬̯̖̙̮̯̪̘ś̡̢̛̛̗̘̗̀̀͘t̢̧̢̘̗̲̩̦̜̰̮̙̫̹̙̟̹̲̱̖̜̪̪̹̩̟̰̫́́̀̕͘̕");
+/// assert_eq!(s, "ṭ́e̠͘s̸̖̫͖̗̰̖̭t̨̼̹͕");
 /// # }
 /// ```
 ///
@@ -223,9 +225,9 @@ pub fn gen<S: Into<String>>(text: S, kind: CharKind, intensity: Intensity) -> St
 ///
 /// # fn main() {
 /// let mut rng = IsaacRng::new_unseeded();
-/// let s = zalgo::gen_rng(&mut rng, "test", CharKind::DOWN, Intensity::None);
+/// let s = zalgo::apply_rng(&mut rng, "test", CharKind::DOWN, Intensity::Random);
 ///
-/// assert_eq!(s, "t̤̗̯̠̗̜̙̹̥͎̩̹̹̺͈̼̜̗̙̮̖̖͉̲̯̳̻̞̗̯̘̘̯̥e͕̩͖̮̻̗͈̤̳̫̬̝̼͇̞͈͉͇̙͔͔̫̯͓̬͖̥̹̟̬̲̻̦̥͈̭͉s̟̟̠̜̗̠̝̗̘t̫͉̤̙̥̰̺̖̦̙̻̮̻͈̥̤̝̯̦̻̼̜͇̦̗̻̜̮̠̼̜̩ͅ");
+/// assert_eq!(s, "ṭ̻͎͚ͅe̝͎͚̭̪s̱͇͓̩t̜͚̳̜͙͚͍̥͖̭̭͇͕̰͙̣̯ͅ");
 /// # }
 /// ```
 ///
@@ -239,28 +241,26 @@ pub fn gen<S: Into<String>>(text: S, kind: CharKind, intensity: Intensity) -> St
 ///
 /// # fn main() {
 /// let mut rng = IsaacRng::new_unseeded();
-/// let s = zalgo::gen_rng(&mut rng, "test", CharKind::empty(), Intensity::None);
+/// let s = zalgo::apply_rng(&mut rng, "test", CharKind::empty(), Intensity::Random);
 /// // Technically the `Intensity` value given does not matter here.
 ///
 /// assert_eq!(s, "test");
 /// # }
 /// ```
 ///
-/// [`gen`]: fn.gen.html
+/// [`apply`]: fn.apply.html
 /// [`rand::Rng`]: https://docs.rs/rand/^0.4/rand/trait.Rng.html
-pub fn gen_rng<S: Into<String>, R: Rng>(
+pub fn apply_rng<R: Rng>(
     rng: &mut R,
-    text: S,
+    text: &str,
     kind: CharKind,
     intensity: Intensity,
 ) -> String {
-    let val = text.into();
-
     // The base String where the original text and new Zalgo text will be
     // appended to.
     let mut result = String::new();
 
-    for ch in val.chars() {
+    for ch in text.chars() {
         // Skip the text if it's already a Zalgo char
         if is_zalgo(ch) {
             continue;
@@ -269,32 +269,54 @@ pub fn gen_rng<S: Into<String>, R: Rng>(
         // Push the given character to the resultant string no matter what
         result.push(ch);
 
-        let count_up = rng.gen_range(0, UP_CHARS.len());
-        let count_mid = if intensity == Intensity::None {
-            rng.gen_range(0, MIDDLE_CHARS.len()) / 2
-        } else {
-            rng.gen_range(0, MIDDLE_CHARS.len())
+        let generate_counts = |rng: &mut R, intensity| {
+            match intensity {
+                Intensity::Mini => (
+                    rng.gen_range(0, 8),
+                    rng.gen_range(0, 2),
+                    rng.gen_range(0, 8),
+                ),
+                Intensity::Normal => (
+                    rng.gen_range(0, 16) / 2 + 1,
+                    rng.gen_range(0, 6) / 2,
+                    rng.gen_range(0, 16) / 2 + 1,
+                ),
+                Intensity::Maxi => (
+                    rng.gen_range(0, 64) / 4 + 3,
+                    rng.gen_range(0, 16) / 4 + 1,
+                    rng.gen_range(0, 64) / 4 + 3,
+                ),
+                Intensity::Random => unreachable!(),
+            }
         };
-        let count_down = rng.gen_range(0, DOWN_CHARS.len());
+
+        let (count_up, count_mid, count_down) = if intensity == Intensity::Random {
+            let choices = [Intensity::Mini, Intensity::Normal, Intensity::Maxi];
+            let choice = *rng.choose(&choices).unwrap();
+
+            generate_counts(rng, choice)
+        } else {
+            generate_counts(rng, intensity)
+        };
 
         if kind.contains(CharKind::UP) {
             for _ in 0..count_up {
-                let get = rng.gen_range(0, count_up);
-                result.push(UP_CHARS[get]);
+                let c = *rng.choose(&UP_CHARS).unwrap();
+                result.push(c);
             }
         }
 
         if kind.contains(CharKind::MIDDLE) {
             for _ in 0..count_mid {
-                let get = rng.gen_range(0, count_mid);
-                result.push(MIDDLE_CHARS[get]);
+                let c = *rng.choose(&MIDDLE_CHARS).unwrap();
+                result.push(c);
             }
         }
 
         if kind.contains(CharKind::DOWN) {
             for _ in 0..count_down {
-                let get = rng.gen_range(0, count_down);
-                result.push(DOWN_CHARS[get]);
+                let c = *rng.choose(&DOWN_CHARS).unwrap();
+                result.push(c);
             }
         }
     }

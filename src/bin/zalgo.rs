@@ -17,7 +17,7 @@ fn main() {
         .collect();
     let text: String = args.join(" ");
 
-    let output: String = zalgo::gen(text, CharKind::UP | CharKind::DOWN, Intensity::Mini);
+    let output: String = zalgo::apply(&text, CharKind::UP | CharKind::DOWN, Intensity::Mini);
 
     println!("{}", output);
 }
