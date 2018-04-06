@@ -1,4 +1,4 @@
-#[cfg(feature = "nightly")]
+#[cfg(any(feature = "nightly", stable_fused_iterator))]
 use std::iter;
 
 use {UP_CHARS, MIDDLE_CHARS, DOWN_CHARS};
@@ -26,7 +26,7 @@ pub fn all_chars() -> AllChars {
 /// An iterator of combined kinds of Zalgo `char`s.
 ///
 /// This struct is created by the [`all_chars`] function. See its documentation
-/// for more.
+/// for more details.
 ///
 /// [`all_chars`]: fn.all_chars.html
 pub struct AllChars {

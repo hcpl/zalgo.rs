@@ -59,6 +59,9 @@ extern crate rand;
 mod all_chars;
 pub use all_chars::{AllChars, all_chars};
 
+mod apply_rng_iter;
+pub use apply_rng_iter::{ApplyRngIter, apply_rng_iter};
+
 use rand::{thread_rng, Rng};
 
 
@@ -173,7 +176,7 @@ pub enum Intensity {
 /// [`rand::thread_rng`]: https://docs.rs/rand/^0.4/rand/fn.thread_rng.html
 /// [`apply_rng`]: fn.apply_rng.html
 pub fn apply(text: &str, kind: CharKind, intensity: Intensity) -> String {
-    apply_rng(&mut thread_rng(), text, kind, intensity)
+    apply_rng_iter(thread_rng(), text.chars(), kind, intensity).collect()
 }
 
 /// Version of [`apply`] function generic over [`rand::Rng`].
@@ -193,7 +196,7 @@ pub fn apply(text: &str, kind: CharKind, intensity: Intensity) -> String {
 /// let mut rng = IsaacRng::new_unseeded();
 /// let s = zalgo::apply_rng(&mut rng, "test", CharKind::all(), Intensity::Maxi);
 ///
-/// assert_eq!(s, "ţ̸̫͖̗̰̖̭̣̱͇̓͌̓̄ͨ͊̚ȇ͛͑͏̸̳̜͙͚͍̥̀ş̴̨̝̜̳̫͉͉̯̤̺̮̘͖̫͒ͧ̽ͥ́̂͂͆͋̆̀̚ͅt̵̛͉̰̯̦͍̙̤͈̰̞͔̥͓̜͒̾ͣͧͦ͢");
+/// assert_eq!(s, "ţ̛̭̼̹͕̑͗̾͆͛̿̐ͯ̈͆ͦ̊͡ͅeͧ̌͂̐͋ͫ̃̈́̆ͦ͒̑ͩ͛ͩ͋ͧ͒͘͟͏̭͓̥̣͚̳̞̯̩͈͍̝͖̠͞s̶̜̲̗̞͓̻̰̘̯͔͇̭̰͒̾ͣͧͦ͒̊̏̃͌͒ͫ̂̊͗̓̓̈́͢͢ͅt̷̳̪͈̙̯̩͓͍̎̾̈ͦ̿");
 /// # }
 /// ```
 ///
@@ -210,7 +213,7 @@ pub fn apply(text: &str, kind: CharKind, intensity: Intensity) -> String {
 /// let mut rng = IsaacRng::new_unseeded();
 /// let s = zalgo::apply_rng(&mut rng, "test", CharKind::MIDDLE | CharKind::DOWN, Intensity::Mini);
 ///
-/// assert_eq!(s, "ṭ́e̠͘s̸̖̫͖̗̰̖̭t̨̼̹͕");
+/// assert_eq!(s, "t̝̤e̫̮̝͎͚̭̪s̭̼̹t͏͚̳̜͙͚ͅ");
 /// # }
 /// ```
 ///
@@ -227,7 +230,7 @@ pub fn apply(text: &str, kind: CharKind, intensity: Intensity) -> String {
 /// let mut rng = IsaacRng::new_unseeded();
 /// let s = zalgo::apply_rng(&mut rng, "test", CharKind::DOWN, Intensity::Random);
 ///
-/// assert_eq!(s, "ṭ̻͎͚ͅe̝͎͚̭̪s̱͇͓̩t̜͚̳̜͙͚͍̥͖̭̭͇͕̰͙̣̯ͅ");
+/// assert_eq!(s, "t̤̞̠̟̫̮̝e̗̳̰̭̼s̜͚̳̜͙͚͍ͅt");
 /// # }
 /// ```
 ///
@@ -251,80 +254,28 @@ pub fn apply(text: &str, kind: CharKind, intensity: Intensity) -> String {
 /// [`apply`]: fn.apply.html
 /// [`rand::Rng`]: https://docs.rs/rand/^0.4/rand/trait.Rng.html
 pub fn apply_rng<R: Rng>(
-    rng: &mut R,
+    rng: R,
     text: &str,
     kind: CharKind,
     intensity: Intensity,
 ) -> String {
-    // The base String where the original text and new Zalgo text will be
-    // appended to.
-    let mut result = String::new();
-
-    for ch in text.chars() {
-        // Skip the text if it's already a Zalgo char
-        if is_zalgo(ch) {
-            continue;
-        }
-
-        // Push the given character to the resultant string no matter what
-        result.push(ch);
-
-        let generate_counts = |rng: &mut R, intensity| {
-            match intensity {
-                Intensity::Mini => (
-                    rng.gen_range(0, 8),
-                    rng.gen_range(0, 2),
-                    rng.gen_range(0, 8),
-                ),
-                Intensity::Normal => (
-                    rng.gen_range(0, 16) / 2 + 1,
-                    rng.gen_range(0, 6) / 2,
-                    rng.gen_range(0, 16) / 2 + 1,
-                ),
-                Intensity::Maxi => (
-                    rng.gen_range(0, 64) / 4 + 3,
-                    rng.gen_range(0, 16) / 4 + 1,
-                    rng.gen_range(0, 64) / 4 + 3,
-                ),
-                Intensity::Random => unreachable!(),
-            }
-        };
-
-        let (count_up, count_mid, count_down) = if intensity == Intensity::Random {
-            let choices = [Intensity::Mini, Intensity::Normal, Intensity::Maxi];
-            let choice = *rng.choose(&choices).unwrap();
-
-            generate_counts(rng, choice)
-        } else {
-            generate_counts(rng, intensity)
-        };
-
-        if kind.contains(CharKind::UP) {
-            for _ in 0..count_up {
-                let c = *rng.choose(&UP_CHARS).unwrap();
-                result.push(c);
-            }
-        }
-
-        if kind.contains(CharKind::MIDDLE) {
-            for _ in 0..count_mid {
-                let c = *rng.choose(&MIDDLE_CHARS).unwrap();
-                result.push(c);
-            }
-        }
-
-        if kind.contains(CharKind::DOWN) {
-            for _ in 0..count_down {
-                let c = *rng.choose(&DOWN_CHARS).unwrap();
-                result.push(c);
-            }
-        }
-    }
-
-    result
+    apply_rng_iter(rng, text.chars(), kind, intensity).collect()
 }
 
-/// Determines whether a given `char` is a `Zalgo` `char`. This is checked by
+/// Version of [`apply`] generic over [`Iterator`] of input `char`s that returns
+/// an iterator of output `char`s.
+///
+/// [`apply`]: fn.apply.html
+/// [`Iterator`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html
+pub fn apply_iter<I: Iterator<Item = char>>(
+    chars: I,
+    kind: CharKind,
+    intensity: Intensity
+) -> ApplyRngIter<rand::ThreadRng, I> {
+    apply_rng_iter(thread_rng(), chars, kind, intensity)
+}
+
+/// Determines whether a given `char` is a Zalgo `char`. This is checked by
 /// checking if a combination of the defined Zalgo `char`s contains the given
 /// `char`.
 ///
