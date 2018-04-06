@@ -16,6 +16,7 @@
 
 #![cfg_attr(feature = "nightly", feature(exact_size_is_empty))]
 
+extern crate lipsum;
 extern crate zalgo;
 
 use zalgo::{UP_CHARS, MIDDLE_CHARS, DOWN_CHARS, CharKind, Intensity};
@@ -211,11 +212,15 @@ fn apply() {
 // Small crash test
 #[test]
 fn roundtrip() {
-    let texts = ["", "foo", zalgo::DESCRIPTION];
-
-    for text in &texts {
-        for _ in 0..20 {
+    let do_roundtrip = |text, times| {
+        for _ in 0..times {
             assert_eq!(&zalgo::unapply(&zalgo::apply(text, CharKind::all(), Intensity::Maxi)), text);
         }
-    }
+    };
+
+    do_roundtrip("", 10000);
+    do_roundtrip("foo", 20);
+    do_roundtrip(zalgo::DESCRIPTION, 5);
+    do_roundtrip(lipsum::LOREM_IPSUM, 2);
+    do_roundtrip(lipsum::LIBER_PRIMUS, 1);
 }

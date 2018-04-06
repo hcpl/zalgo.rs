@@ -10,12 +10,24 @@ readme = "README.md"
 repository = "https://github.com/zeyla/zalgo.rs.git"
 version = "0.2.0"
 
+
 [dependencies]
 bitflags = "^1.0"
 rand = { version = "^0.4", default-features = false }
 
 [build-dependencies]
 rustc_version = "^0.2"
+
+[dev-dependencies]
+lipsum = "^0.4"
+
+
+[features]
+default = ["std"]
+std = ["rand/std"]
+alloc = []
+nightly = []
+
 
 [[bin]]
 name = "zalgo"
@@ -25,9 +37,3 @@ required-features = ["std"]
 [[example]]
 name = "apply"
 required-features = ["std"]
-
-[features]
-default = ["std"]
-std = ["rand/std"]
-alloc = []
-nightly = []
