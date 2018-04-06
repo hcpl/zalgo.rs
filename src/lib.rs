@@ -50,6 +50,17 @@
 extern crate bitflags;
 extern crate rand;
 
+use rand::{thread_rng, Rng};
+
+pub static DESCRIPTION: &str = "\
+    To invoke the hive-mind representing chaos.\n\
+    Invoking the feeling of chaos.\n\
+    With out order.\n\
+    The Nezperdian hive-mind of chaos. Zalgo.\n\
+    He who Waits Behind The Wall.\n\
+    ZALGO!\
+";
+
 /// Denotes characters to be used in the "upper" part of text.
 pub static UP_CHARS: [char; 50] = [
     '̍', '̎', '̄', '̅', '̿', '̑', '̆', '̐', '͒', '͗', '͑', '̇', '̈', '̊',
@@ -68,8 +79,6 @@ pub static DOWN_CHARS: [char; 40] = [
     '̫', '̬', '̭', '̮', '̯', '̰', '̱', '̲', '̳', '̹', '̺', '̻', '̼', 'ͅ',
     '͇', '͈', '͉', '͍', '͎', '͓', '͔', '͕', '͖', '͙', '͚', '̣',
 ];
-
-use rand::{thread_rng, Rng};
 
 bitflags! {
     /// A definition of the character type to be used for retrieval.
