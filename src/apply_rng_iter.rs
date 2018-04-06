@@ -1,4 +1,7 @@
-#[cfg(any(feature = "nightly", stable_fused_iterator))]
+#[cfg(all(not(feature = "std"), any(feature = "nightly", stable_fused_iterator)))]
+use core::iter;
+
+#[cfg(all(feature = "std", any(feature = "nightly", stable_fused_iterator)))]
 use std::iter;
 
 use rand::Rng;

@@ -163,6 +163,7 @@ fn intensity() {
     let _ = Intensity::Random;
 }
 
+#[cfg(feature = "std")]
 #[test]
 fn apply() {
     // It's not really possible to test the outputs, so just test whether they

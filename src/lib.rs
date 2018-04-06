@@ -43,9 +43,11 @@
 //! ```rust
 //! use zalgo::{CharKind, Intensity};
 //!
+//! # #[cfg(feature = "std")]
 //! let result = zalgo::apply("my string", CharKind::UP, Intensity::Maxi);
 //! ```
 
+#![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(feature = "nightly", feature(
     exact_size_is_empty,
     fused,
@@ -62,7 +64,8 @@ pub use all_chars::{AllChars, all_chars};
 mod apply_rng_iter;
 pub use apply_rng_iter::{ApplyRngIter, apply_rng_iter};
 
-use rand::{thread_rng, Rng};
+#[cfg(feature = "std")]
+use rand::{Rng, ThreadRng, thread_rng};
 
 
 pub static DESCRIPTION: &str = "\
@@ -175,6 +178,7 @@ pub enum Intensity {
 ///
 /// [`rand::thread_rng`]: https://docs.rs/rand/^0.4/rand/fn.thread_rng.html
 /// [`apply_rng`]: fn.apply_rng.html
+#[cfg(feature = "std")]
 pub fn apply(text: &str, kind: CharKind, intensity: Intensity) -> String {
     apply_rng_iter(thread_rng(), text.chars(), kind, intensity).collect()
 }
@@ -253,6 +257,7 @@ pub fn apply(text: &str, kind: CharKind, intensity: Intensity) -> String {
 ///
 /// [`apply`]: fn.apply.html
 /// [`rand::Rng`]: https://docs.rs/rand/^0.4/rand/trait.Rng.html
+#[cfg(feature = "std")]
 pub fn apply_rng<R: Rng>(
     rng: R,
     text: &str,
@@ -267,11 +272,12 @@ pub fn apply_rng<R: Rng>(
 ///
 /// [`apply`]: fn.apply.html
 /// [`Iterator`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html
+#[cfg(feature = "std")]
 pub fn apply_iter<I: Iterator<Item = char>>(
     chars: I,
     kind: CharKind,
     intensity: Intensity
-) -> ApplyRngIter<rand::ThreadRng, I> {
+) -> ApplyRngIter<ThreadRng, I> {
     apply_rng_iter(thread_rng(), chars, kind, intensity)
 }
 
