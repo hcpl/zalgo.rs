@@ -135,6 +135,13 @@ pub fn all() -> Vec<char> {
 /// The amount of Zalgo text can be (more or less) defined by the value of the
 /// `intensity` given. Read on the `Intensity` for more information.
 ///
+/// # Notes on random generator
+///
+/// This function uses [`rand::thread_rng`] under the hood which contiributes to
+/// its non-determinism. For reproducible results (such as when performing
+/// tests) or when other random generator is needed use [`gen_rng`] instead and
+/// provide it a random generator of your choice.
+///
 /// # Examples
 ///
 /// Create Zalgo text with Zalgo `char`s in all positions, with a maximum amount
@@ -172,14 +179,98 @@ pub fn all() -> Vec<char> {
 /// let _ = zalgo::gen("test", CharKind::empty(), Intensity::None);
 /// // Technically the `Intensity` value given does not matter here.
 /// ```
+///
+/// [`rand::thread_rng`]: https://docs.rs/rand/^0.4/rand/fn.thread_rng.html
+/// [`gen_rng`]: fn.gen_rng.html
 pub fn gen<S: Into<String>>(text: S, kind: CharKind, intensity: Intensity) -> String {
+    gen_rng(&mut thread_rng(), text, kind, intensity)
+}
+
+/// Version of [`gen`] function generic over [`rand::Rng`].
+///
+/// # Examples
+///
+/// Create Zalgo text with Zalgo `char`s in all positions, with a maximum amount
+/// of Zalgo:
+///
+/// ```rust
+/// # extern crate rand;
+/// # extern crate zalgo;
+/// use rand::IsaacRng;
+/// use zalgo::{CharKind, Intensity};
+///
+/// # fn main() {
+/// let mut rng = IsaacRng::new_unseeded();
+/// let s = zalgo::gen_rng(&mut rng, "test", CharKind::all(), Intensity::Maxi);
+///
+/// assert_eq!(s, "t̡̢̢̡̡̢̂͊̿̌̊̄̑̅͗͒̂̆̐̎̂͒̍̄͊͑̿̈͌͘̕͏̢̧̛̹̘̪̫̝̞̝͉̤̱̝̠̼̘̼͉̤̝̗͎̳̮̰̤͇͎͍̝̥̜̮̖̀́ͅͅę̵̶̵̷̶̶̢̛̜̞̠̜̜̗̝̞̤̤̖͂͗̈̓͗̿͂͋͊̅͒̇̆̑̎͂̿͑͒̀́́́́̕͘͢͟͢͠͝͞s̡̰̮̙̱̳̼̹̭̗̪̻̖̱̬̲̥̘̝̹̲̫̱̞̪̳̳̺̎͗͒͂̑̈͂̐̊̐̇̓̇̓̍̐̅̎͗̀̀̀́̕ţ̴̡̧̧̄̅̅̐̍̐̄̅́̕̕͞͝͏̢̤̟̤̜̟̜̤̘̖̜̗̜̙̀̀͜͝͞͞");
+/// # }
+/// ```
+///
+/// Create Zalgo text with Zalgo `char`s in only the middle and lower positions,
+/// with a minimum amount of Zalgo:
+///
+/// ```rust
+/// # extern crate rand;
+/// # extern crate zalgo;
+/// use rand::IsaacRng;
+/// use zalgo::{CharKind, Intensity};
+///
+/// # fn main() {
+/// let mut rng = IsaacRng::new_unseeded();
+/// let s = zalgo::gen_rng(&mut rng, "test", CharKind::MIDDLE | CharKind::DOWN, Intensity::Mini);
+///
+/// assert_eq!(s, "t̵̨̢̛̛̛̛͈̼̜̗̙̮̖̖͉̲̯̳̻̞̗̯̘̘̯̥̪̙͓̹̘̪̫̝̞̝͉̤̱́́̕͘͘̕͜ͅe̘̫̭̤̰̟̞̜̟̮̲̥̘̙̬̯̖̙̮̯̪̘ś̡̢̛̛̗̘̗̀̀͘t̢̧̢̘̗̲̩̦̜̰̮̙̫̹̙̟̹̲̱̖̜̪̪̹̩̟̰̫́́̀̕͘̕");
+/// # }
+/// ```
+///
+/// Create Zalgo text with Zalgo `char`s in only the lower position, with a
+/// random amount of Zalgo (can be a low amount or high amount):
+///
+/// ```rust
+/// # extern crate rand;
+/// # extern crate zalgo;
+/// use rand::IsaacRng;
+/// use zalgo::{CharKind, Intensity};
+///
+/// # fn main() {
+/// let mut rng = IsaacRng::new_unseeded();
+/// let s = zalgo::gen_rng(&mut rng, "test", CharKind::DOWN, Intensity::None);
+///
+/// assert_eq!(s, "t̤̗̯̠̗̜̙̹̥͎̩̹̹̺͈̼̜̗̙̮̖̖͉̲̯̳̻̞̗̯̘̘̯̥e͕̩͖̮̻̗͈̤̳̫̬̝̼͇̞͈͉͇̙͔͔̫̯͓̬͖̥̹̟̬̲̻̦̥͈̭͉s̟̟̠̜̗̠̝̗̘t̫͉̤̙̥̰̺̖̦̙̻̮̻͈̥̤̝̯̦̻̼̜͇̦̗̻̜̮̠̼̜̩ͅ");
+/// # }
+/// ```
+///
+/// Consequentially, you can also not modify your given text with any Zalgo:
+///
+/// ```rust
+/// # extern crate rand;
+/// # extern crate zalgo;
+/// use rand::IsaacRng;
+/// use zalgo::{CharKind, Intensity};
+///
+/// # fn main() {
+/// let mut rng = IsaacRng::new_unseeded();
+/// let s = zalgo::gen_rng(&mut rng, "test", CharKind::empty(), Intensity::None);
+/// // Technically the `Intensity` value given does not matter here.
+///
+/// assert_eq!(s, "test");
+/// # }
+/// ```
+///
+/// [`gen`]: fn.gen.html
+/// [`rand::Rng`]: https://docs.rs/rand/^0.4/rand/trait.Rng.html
+pub fn gen_rng<S: Into<String>, R: Rng>(
+    rng: &mut R,
+    text: S,
+    kind: CharKind,
+    intensity: Intensity,
+) -> String {
     let val = text.into();
 
     // The base String where the original text and new Zalgo text will be
     // appended to.
     let mut result = String::new();
-
-    let mut rng = thread_rng();
 
     for ch in val.chars() {
         // Skip the text if it's already a Zalgo char
