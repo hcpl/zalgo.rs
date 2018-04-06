@@ -14,6 +14,5 @@ version = "0.1.1"
 rand = "^0.4"
 
 [[bin]]
-doc = false
 name = "zalgo"
-path = "bin/zalgo.rs"
+doc = false
