@@ -46,6 +46,13 @@
 //! # #[cfg(feature = "std")]
 //! let result = zalgo::apply("my string", CharKind::UP, Intensity::Maxi);
 //! ```
+//!
+//! ## Optional features
+//!
+//! - **`std`** *(enabled by default)* — `libstd` support. If disabled, `zalgo`
+//!   will use `libcore` instead.
+//! - **`nightly`** — Access to unstable features available on nightly
+//!   compilers.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(feature = "nightly", feature(
@@ -124,12 +131,16 @@ pub enum Intensity {
     Random,
 }
 
-/// Generates a String containing Zalgo text. This is customizable via defining
-/// whether to include Zalgo text above the given string, in the middle of it,
-/// and below it.
+/// Generates a `String` containing Zalgo text with thread-local random
+/// generator.
+///
+/// The output is customizable via defining whether to include Zalgo text above
+/// the given string, in the middle of it, and below it.
 ///
 /// The amount of Zalgo text can be (more or less) defined by the value of the
-/// `intensity` given. Read on the `Intensity` for more information.
+/// `intensity` given. Read on the [`Intensity`] for more information.
+///
+/// *This function is available if Zalgo is built with the `"std"` feature.*
 ///
 /// # Notes on random generator
 ///
@@ -176,6 +187,7 @@ pub enum Intensity {
 /// // Technically the `Intensity` value given does not matter here.
 /// ```
 ///
+/// [`Intensity`]: enum.Intensity.html
 /// [`rand::thread_rng`]: https://docs.rs/rand/^0.4/rand/fn.thread_rng.html
 /// [`apply_rng`]: fn.apply_rng.html
 #[cfg(feature = "std")]
@@ -183,7 +195,16 @@ pub fn apply(text: &str, kind: CharKind, intensity: Intensity) -> String {
     apply_rng_iter(thread_rng(), text.chars(), kind, intensity).collect()
 }
 
-/// Version of [`apply`] function generic over [`rand::Rng`].
+/// Generates a `String` containing Zalgo text with user-provided random
+/// generator.
+///
+/// The output is customizable via defining whether to include Zalgo text above
+/// the given string, in the middle of it, and below it.
+///
+/// The amount of Zalgo text can be (more or less) defined by the value of the
+/// `intensity` given. Read on the [`Intensity`] for more information.
+///
+/// *This function is available if Zalgo is built with the `"std"` feature.*
 ///
 /// # Examples
 ///
@@ -255,8 +276,7 @@ pub fn apply(text: &str, kind: CharKind, intensity: Intensity) -> String {
 /// # }
 /// ```
 ///
-/// [`apply`]: fn.apply.html
-/// [`rand::Rng`]: https://docs.rs/rand/^0.4/rand/trait.Rng.html
+/// [`Intensity`]: enum.Intensity.html
 #[cfg(feature = "std")]
 pub fn apply_rng<R: Rng>(
     rng: R,
@@ -267,11 +287,28 @@ pub fn apply_rng<R: Rng>(
     apply_rng_iter(rng, text.chars(), kind, intensity).collect()
 }
 
-/// Version of [`apply`] generic over [`Iterator`] of input `char`s that returns
-/// an iterator of output `char`s.
+/// Returns an [`Iterator`] of `char`s of generated Zalgo text with thread-local
+/// random generator.
 ///
-/// [`apply`]: fn.apply.html
+/// The output is customizable via defining whether to include Zalgo text above
+/// the given string, in the middle of it, and below it.
+///
+/// The amount of Zalgo text can be (more or less) defined by the value of the
+/// `intensity` given. Read on the [`Intensity`] for more information.
+///
+/// *This function is available if Zalgo is built with the `"std"` feature.*
+///
+/// # Notes on random generator
+///
+/// This function uses [`rand::thread_rng`] under the hood which contiributes to
+/// its non-determinism. For reproducible results (such as when performing
+/// tests) or when other random generator is needed use [`apply_rng_ter`]
+/// instead and provide it a random generator of your choice.
+///
 /// [`Iterator`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html
+/// [`Intensity`]: enum.Intensity.html
+/// [`rand::thread_rng`]: https://docs.rs/rand/^0.4/rand/fn.thread_rng.html
+/// [`apply_rng_iter`]: fn.apply_rng_iter.html
 #[cfg(feature = "std")]
 pub fn apply_iter<I: Iterator<Item = char>>(
     chars: I,

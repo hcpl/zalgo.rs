@@ -9,12 +9,17 @@ use rand::Rng;
 use {UP_CHARS, MIDDLE_CHARS, DOWN_CHARS, CharKind, Intensity, is_zalgo};
 
 
-/// Version of [`apply`] function generic over [`rand::Rng`] and [`Iterator`] of
-/// input `char`s that returns an iterator of output `char`s.
+/// Returns an [`Iterator`] of `char`s of generated Zalgo text with
+/// user-provided random generator.
 ///
-/// [`apply`]: fn.apply.html
-/// [`rand::Rng`]: https://docs.rs/rand/^0.4/rand/trait.Rng.html
+/// The output is customizable via defining whether to include Zalgo text above
+/// the given string, in the middle of it, and below it.
+///
+/// The amount of Zalgo text can be (more or less) defined by the value of the
+/// `intensity` given. Read on the [`Intensity`] for more information.
+///
 /// [`Iterator`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html
+/// [`Intensity`]: enum.Intensity.html
 pub fn apply_rng_iter<R: Rng, I: Iterator<Item = char>>(
     rng: R,
     chars: I,
