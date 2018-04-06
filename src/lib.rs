@@ -63,7 +63,10 @@
 #![cfg_attr(feature = "nightly", feature(
     exact_size_is_empty,
     fused,
+    iter_rfold,
+    iterator_try_fold,
     trusted_len,
+    try_trait,
 ))]
 
 #[cfg(feature = "std")]
@@ -81,6 +84,9 @@ pub use all_chars::{AllChars, all_chars};
 
 mod apply_rng_iter;
 pub use apply_rng_iter::{ApplyRngIter, apply_rng_iter};
+
+mod unapply_iter;
+pub use unapply_iter::{UnapplyIter, unapply_iter};
 
 #[cfg(all(feature = "alloc", not(feature = "std")))]
 use alloc::String;
@@ -333,6 +339,15 @@ pub fn apply_iter<I: Iterator<Item = char>>(
     intensity: Intensity
 ) -> ApplyRngIter<ThreadRng, I> {
     apply_rng_iter(thread_rng(), chars, kind, intensity)
+}
+
+/// Removes Zalgo `char`s from the original string.
+///
+/// *This function is available if Zalgo is built with the `"std"` or `"alloc"`
+/// feature.*
+#[cfg(any(feature = "std", feature = "alloc"))]
+pub fn unapply(text: &str) -> String {
+    unapply_iter(text.chars()).collect()
 }
 
 /// Determines whether a given `char` is a Zalgo `char`. This is checked by

@@ -207,3 +207,15 @@ fn apply() {
     // Test that passing a String works.
     let _ = zalgo::apply(&String::from("t"), CharKind::empty(), Intensity::Random);
 }
+
+// Small crash test
+#[test]
+fn roundtrip() {
+    let texts = ["", "foo", zalgo::DESCRIPTION];
+
+    for text in &texts {
+        for _ in 0..20 {
+            assert_eq!(&zalgo::unapply(&zalgo::apply(text, CharKind::all(), Intensity::Maxi)), text);
+        }
+    }
+}

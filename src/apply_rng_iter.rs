@@ -80,6 +80,7 @@ fn generate_counts<R: Rng>(rng: &mut R, intensity: Intensity) -> (usize, usize, 
     }
 }
 
+// State machine in action!
 impl<R, I> Iterator for ApplyRngIter<R, I>
     where R: Rng,
           I: Iterator<Item = char>,
