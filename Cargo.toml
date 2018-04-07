@@ -13,6 +13,7 @@ version = "0.2.0"
 
 [dependencies]
 bitflags = "^1.0"
+colored = { version = "^1.6", optional = true }
 rand = { version = "^0.4", default-features = false }
 structopt = { version = "^0.2", optional = true }
 
@@ -29,7 +30,7 @@ std = ["rand/std"]
 alloc = []
 nightly = []
 
-build-binary = ["std", "structopt"]
+build-binary = ["std", "colored", "structopt"]
 
 
 [[bin]]
