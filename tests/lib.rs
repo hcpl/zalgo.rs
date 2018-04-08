@@ -17,6 +17,7 @@
 #![cfg_attr(feature = "nightly", feature(exact_size_is_empty))]
 
 extern crate lipsum;
+extern crate rand;
 extern crate zalgo;
 
 use zalgo::{UP_CHARS, MIDDLE_CHARS, DOWN_CHARS, CharKind, Intensity};
@@ -209,16 +210,76 @@ fn apply() {
     let _ = zalgo::apply(&String::from("t"), CharKind::empty(), Intensity::Random);
 }
 
+
 // Small crash tests
 macro_rules! do_roundtrips {
-    ($( $name:ident, $str:expr => $times:expr, )*) => {
+    (
+        core => {
+            $( $name_core:ident, $str_core:expr => $times_core:expr, )*
+        }
+
+        alloc => {
+            $( $name_alloc:ident, $str_alloc:expr => $times_alloc:expr, )*
+        }
+
+        std => {
+            $( $name_std:ident, $str_std:expr => $times_std:expr, )*
+        }
+    ) => {
         $(
             #[test]
-            fn $name() {
-                for _ in 0..$times {
+            fn $name_core() {
+                for _ in 0..$times_core {
+                    assert!(
+                        zalgo::unapply_iter(zalgo::apply_rng_iter(
+                            rand::XorShiftRng::new_unseeded(),
+                            $str_core.chars(),
+                            CharKind::all(),
+                            Intensity::Maxi,
+                        )).eq($str_core.chars())
+                    );
+                }
+            }
+        )*
+
+        $(
+            #[cfg(any(feature = "std", feature = "alloc"))]
+            #[test]
+            fn $name_alloc() {
+                for _ in 0..$times_alloc {
                     assert_eq!(
-                        &zalgo::unapply(&zalgo::apply($str, CharKind::all(), Intensity::Maxi)),
-                        $str
+                        &zalgo::unapply(&zalgo::apply_rng(
+                            rand::XorShiftRng::new_unseeded(),
+                            $str_alloc,
+                            CharKind::all(),
+                            Intensity::Maxi,
+                        )),
+                        $str_alloc
+                    );
+                }
+            }
+        )*
+
+        $(
+            #[cfg(feature = "std")]
+            #[test]
+            fn $name_std() {
+                for _ in 0..($times_std / 2) {  // Running 2 operations per iteration
+                    assert!(
+                        zalgo::unapply_iter(zalgo::apply_iter(
+                            $str_core.chars(),
+                            CharKind::all(),
+                            Intensity::Maxi,
+                        )).eq($str_core.chars())
+                    );
+
+                    assert_eq!(
+                        &zalgo::unapply(&zalgo::apply(
+                            $str_std,
+                            CharKind::all(),
+                            Intensity::Maxi,
+                        )),
+                        $str_std
                     );
                 }
             }
@@ -227,9 +288,27 @@ macro_rules! do_roundtrips {
 }
 
 do_roundtrips! {
-    do_roundtrips_empty, "" => 100000,
-    do_roundtrips_foo, "foo" => 1000,
-    do_roundtrips_zalgo_description, zalgo::DESCRIPTION => 100,
-    do_roundtrips_lorem_ipsum, lipsum::LOREM_IPSUM => 20,
-    do_roundtrips_liber_primus, lipsum::LIBER_PRIMUS => 1,
+    core => {
+        do_roundtrips_core_empty, "" => 100000,
+        do_roundtrips_core_foo, "foo" => 300,
+        do_roundtrips_core_zalgo_description, zalgo::DESCRIPTION => 50,
+        do_roundtrips_core_lorem_ipsum, lipsum::LOREM_IPSUM => 15,
+        do_roundtrips_core_liber_primus, lipsum::LIBER_PRIMUS => 1,
+    }
+
+    alloc => {
+        do_roundtrips_alloc_empty, "" => 100000,
+        do_roundtrips_alloc_foo, "foo" => 300,
+        do_roundtrips_alloc_zalgo_description, zalgo::DESCRIPTION => 50,
+        do_roundtrips_alloc_lorem_ipsum, lipsum::LOREM_IPSUM => 15,
+        do_roundtrips_alloc_liber_primus, lipsum::LIBER_PRIMUS => 1,
+    }
+
+    std => {
+        do_roundtrips_std_empty, "" => 100000,
+        do_roundtrips_std_foo, "foo" => 300,
+        do_roundtrips_std_zalgo_description, zalgo::DESCRIPTION => 50,
+        do_roundtrips_std_lorem_ipsum, lipsum::LOREM_IPSUM => 15,
+        do_roundtrips_std_liber_primus, lipsum::LIBER_PRIMUS => 1,
+    }
 }
