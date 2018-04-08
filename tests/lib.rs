@@ -145,17 +145,18 @@ fn char_kind() {
     assert_eq!(!down, up | middle);
 
     assert_eq!(CharKind::from_bits(0b000), Some(empty));
-    assert_eq!(CharKind::from_bits(0b001), Some(up));
+    assert_eq!(CharKind::from_bits(0b001), Some(down));
     assert_eq!(CharKind::from_bits(0b010), Some(middle));
-    assert_eq!(CharKind::from_bits(0b100), Some(down));
-    assert_eq!(CharKind::from_bits(0b011), Some(up | middle));
+    assert_eq!(CharKind::from_bits(0b100), Some(up));
+    assert_eq!(CharKind::from_bits(0b011), Some(middle | down));
     assert_eq!(CharKind::from_bits(0b101), Some(up | down));
-    assert_eq!(CharKind::from_bits(0b110), Some(middle | down));
+    assert_eq!(CharKind::from_bits(0b110), Some(up | middle));
     assert_eq!(CharKind::from_bits(0b111), Some(all));
 
     assert_eq!(CharKind::from_bits(0b1011), None);
     assert_eq!(CharKind::from_bits(0b00100000), None);
 }
+
 
 #[test]
 fn intensity() {

@@ -130,15 +130,15 @@ pub static DOWN_CHARS: [char; 40] = [
 bitflags! {
     /// A definition of the character type to be used for retrieval.
     pub struct CharKind: u8 {
-        /// Denotes characters to be used to appear in the top of the resulting
-        /// string.
-        const UP     = 0b00000001;
+        /// Denotes characters to be used to appear in the bottom of the resulting
+        /// string (i.e. similar to underlined text).
+        const DOWN   = 0b00000001;
         /// Denotes characters to be used to appear in the middle of the resulting
         /// string (i.e. similar to strikethrough text).
         const MIDDLE = 0b00000010;
-        /// Denotes characters to be used to appear in the bottom of the resulting
-        /// string (i.e. similar to underlined text).
-        const DOWN   = 0b00000100;
+        /// Denotes characters to be used to appear in the top of the resulting
+        /// string.
+        const UP     = 0b00000100;
     }
 }
 
