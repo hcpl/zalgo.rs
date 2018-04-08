@@ -209,18 +209,27 @@ fn apply() {
     let _ = zalgo::apply(&String::from("t"), CharKind::empty(), Intensity::Random);
 }
 
-// Small crash test
-#[test]
-fn roundtrip() {
-    let do_roundtrip = |text, times| {
-        for _ in 0..times {
-            assert_eq!(&zalgo::unapply(&zalgo::apply(text, CharKind::all(), Intensity::Maxi)), text);
-        }
-    };
+// Small crash tests
+macro_rules! do_roundtrips {
+    ($( $name:ident, $str:expr => $times:expr, )*) => {
+        $(
+            #[test]
+            fn $name() {
+                for _ in 0..$times {
+                    assert_eq!(
+                        &zalgo::unapply(&zalgo::apply($str, CharKind::all(), Intensity::Maxi)),
+                        $str
+                    );
+                }
+            }
+        )*
+    }
+}
 
-    do_roundtrip("", 10000);
-    do_roundtrip("foo", 20);
-    do_roundtrip(zalgo::DESCRIPTION, 5);
-    do_roundtrip(lipsum::LOREM_IPSUM, 2);
-    do_roundtrip(lipsum::LIBER_PRIMUS, 1);
+do_roundtrips! {
+    do_roundtrips_empty, "" => 100000,
+    do_roundtrips_foo, "foo" => 1000,
+    do_roundtrips_zalgo_description, zalgo::DESCRIPTION => 100,
+    do_roundtrips_lorem_ipsum, lipsum::LOREM_IPSUM => 20,
+    do_roundtrips_liber_primus, lipsum::LIBER_PRIMUS => 1,
 }
