@@ -23,6 +23,7 @@ This features both a library and a binary, which can be used via:
 Add the following dependency to your Cargo.toml:
 
 ```toml
+[dependencies]
 zalgo = "0.2"
 ```
 

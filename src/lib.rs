@@ -58,6 +58,8 @@
 //! - **`nightly`** — Access to unstable features available on nightly
 //!   compilers.
 
+#![doc(html_root_url = "https://docs.rs/zalgo/0.2.0")]
+
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(all(feature = "alloc", not(feature = "std")), feature(alloc))]
 #![cfg_attr(feature = "nightly", feature(

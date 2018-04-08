@@ -15,10 +15,13 @@ version = "0.2.0"
 bitflags = "^1.0"
 colored = { version = "^1.6", optional = true }
 rand = { version = "^0.4", default-features = false }
-# Skeptic is in [dependencies] and not [dev-dependencies] because
+# `skeptic` is in [dependencies] and not [dev-dependencies] because
 # dev-dependencies are not allowed to be optional
 skeptic = { version = "^0.13", optional = true }
 structopt = { version = "^0.2", optional = true }
+# `version-sync` is in [dependencies] and not [dev-dependencies] because
+# dev-dependencies are not allowed to be optional
+version-sync = { version = "^0.5", optional = true }
 
 [build-dependencies]
 rustc_version = "^0.2"
@@ -29,12 +32,15 @@ lipsum = "^0.4"
 
 
 [features]
+# Features that affect the library itself
 default = ["std"]
 std = ["rand/std"]
 alloc = []
 nightly = []
 
+# Features that affect tools around the library
 build-binary = ["std", "colored", "structopt"]
+test-readme = ["skeptic", "version-sync"]
 
 
 [[bin]]
