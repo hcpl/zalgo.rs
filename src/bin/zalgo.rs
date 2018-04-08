@@ -1,9 +1,11 @@
 extern crate colored;
+extern crate rand;
 #[macro_use]
 extern crate structopt;
 extern crate zalgo;
 
 
+use std::ffi::OsStr;
 use std::fmt;
 use std::fs::File;
 use std::io::{self, Read, Write};
@@ -13,19 +15,25 @@ use std::process;
 use std::str;
 
 use colored::Colorize;
+use rand::{jitter, Rng};
 use structopt::StructOpt;
 use zalgo::{CharKind, Intensity};
 
 
 #[derive(Debug, StructOpt)]
 struct Args {
-    /// Read from input file instead of stdin
-    #[structopt(short = "i", help = "Input file", parse(from_os_str))]
-    input: Option<PathBuf>,
+    /// Read from specified input (default: stdin)
+    #[structopt(short = "i", long = "input", parse(from_os_str = "parse_input"))]
+    input: Option<Input>,
 
-    /// Write to output file instead of stdout
-    #[structopt(short = "o", help = "Output file", parse(from_os_str))]
-    output: Option<PathBuf>,
+    /// Write to specified output (default: stdout)
+    #[structopt(short = "o", long = "output", parse(from_os_str = "parse_output"))]
+    output: Option<Output>,
+
+    /// Random number generator,
+    /// allowed values: chacha, isaac, isaac64, jitter, os, std, thread, xorshift (default: thread)
+    #[structopt(short = "r", long = "rng")]
+    rng: Option<String>,
 
     /// Enable up chars
     #[structopt(short = "u", long = "up")]
@@ -40,12 +48,57 @@ struct Args {
     down: bool,
 
     /// Set mangling intensity,
-    /// allowed values: mini, normal, maxi, random, custom(<up>,<middle>,<down>)
+    /// allowed values: mini, normal, maxi, random, custom(<up>,<middle>,<down>) (default: mini)
     #[structopt(short = "s", long = "intensity", parse(try_from_str = "parse_intensity"))]
     intensity: Option<Intensity>,
 
     /// Input text
     text: Option<String>,
+}
+
+#[derive(Debug)]
+enum Input {
+    Stdin,
+    Path(PathBuf),
+}
+
+fn parse_input(s: &&OsStr) -> Input {
+    if s.to_str() == Some("-") {
+        Input::Stdin
+    } else {
+        Input::Path(PathBuf::from(s))
+    }
+}
+
+#[derive(Debug)]
+enum Output {
+    Stdout,
+    Path(PathBuf),
+}
+
+fn parse_output(s: &&OsStr) -> Output {
+    if s.to_str() == Some("-") {
+        Output::Stdout
+    } else {
+        Output::Path(PathBuf::from(s))
+    }
+}
+
+fn parse_rng(s: &str) -> Result<Box<Rng>, Error> {
+    let rng: Box<Rng> = match s {
+        "chacha" => Box::new(rand::ChaChaRng::new_unseeded()),
+        "isaac" => Box::new(rand::IsaacRng::new_unseeded()),
+        "isaac64" =>  Box::new(rand::Isaac64Rng::new_unseeded()),
+        "jitter" => Box::new(rand::JitterRng::new()?),
+        "os" => Box::new(rand::OsRng::new()?),
+        "std" => Box::new(rand::StdRng::new()?),
+        "thread" => Box::new(rand::thread_rng()),
+        "xorshift" =>  Box::new(rand::XorShiftRng::new_unseeded()),
+
+        _ => return Err(Error::ParseRng(s.into())),
+    };
+
+    Ok(rng)
 }
 
 fn parse_intensity(s: &str) -> Result<Intensity, Error> {
@@ -80,6 +133,7 @@ fn parse_intensity(s: &str) -> Result<Intensity, Error> {
 
             Intensity::Custom { up, middle, down }
         },
+
         _ => return Err(Error::ParseIntensity(s.into())),
     };
 
@@ -91,9 +145,11 @@ fn parse_intensity(s: &str) -> Result<Intensity, Error> {
 enum Error {
     ParseIntensity(String),
     ParseInt(String, num::ParseIntError),
+    ParseRng(String),
     OpenFile(PathBuf, io::Error),
     CreateFile(PathBuf, io::Error),
     Io(io::Error),
+    JitterTimer(jitter::TimerError),
 }
 
 impl fmt::Display for Error {
@@ -105,6 +161,9 @@ impl fmt::Display for Error {
             Error::ParseInt(ref str_param, ref pie) => {
                 write!(f, "Couldn't parse {:?} as an integer: {}", str_param, pie)
             },
+            Error::ParseRng(ref string) => {
+                write!(f, "Couldn't parse {:?} as an RNG parameter", string)
+            },
             Error::OpenFile(ref path, ref ioe) => {
                 write!(f, "Error when opening file `{}`: {}.", path.display(), ioe)
             },
@@ -114,6 +173,9 @@ impl fmt::Display for Error {
             Error::Io(ref ioe) => {
                 write!(f, "IO error: {}", ioe)
             },
+            Error::JitterTimer(ref jte) => {
+                write!(f, "Jitter timer error: {}", jte)
+            }
         }
     }
 }
@@ -124,8 +186,16 @@ impl From<io::Error> for Error {
     }
 }
 
+impl From<jitter::TimerError> for Error {
+    fn from(e: jitter::TimerError) -> Error {
+        Error::JitterTimer(e)
+    }
+}
+
 
 fn run(args: Args) -> Result<(), Error> {
+    let rng = args.rng.map(|s| parse_rng(&s)).unwrap_or_else(|| Ok(Box::new(rand::thread_rng())))?;
+
     let combined_kind = {
         let mut k = CharKind::empty();
 
@@ -143,47 +213,60 @@ fn run(args: Args) -> Result<(), Error> {
 
     let intensity = args.intensity.unwrap_or(Intensity::Mini);
 
-    let text = if let Some(path) = args.input {
-        // Prefer reading from files first
-
-        let mut buf = String::new();
-
-        let mut f = File::open(&path).map_err(|e| Error::OpenFile(path, e))?;
-        f.read_to_string(&mut buf)?;
-
-        buf
-    } else if let Some(text) = args.text {
-        // Then if no input file specified, read from argument list
-
-        text
-    } else {
-        // If there are no positional arguments too, read from stdin
-
+    let read_from_stdin = || -> Result<_, Error> {
         let stdin = io::stdin();
         let mut handle = stdin.lock();
 
         let mut buf = String::new();
         handle.read_to_string(&mut buf)?;
 
-        buf
+        Ok(buf)
     };
 
-    let mut output: Box<io::Write> = if let Some(path) = args.output {
-        Box::new(File::create(&path).map_err(|e| Error::CreateFile(path, e))?)
+    // 1) Prefer reading from explicitly specified input first
+    // 2) Then if no input specified, read from argument list
+    // 3) If there are no positional arguments too, read from stdin
+    let text = if let Some(input) = args.input {
+        match input {
+            Input::Stdin => read_from_stdin()?,
+            Input::Path(path) => {
+                let mut buf = String::new();
+
+                let mut f = File::open(&path).map_err(|e| Error::OpenFile(path, e))?;
+                f.read_to_string(&mut buf)?;
+
+                buf
+            },
+        }
+    } else if let Some(text) = args.text {
+        text
     } else {
-        Box::new(io::stdout())
+        read_from_stdin()?
     };
 
-    // This way we don't have to spend time allocating a String for the whole
-    // Zalgo text and wasting memory in the process.
-    for c in zalgo::apply_iter(text.chars(), combined_kind, intensity) {
-        let mut buf = [0u8; 4];
-        let s = c.encode_utf8(&mut buf);
-        output.write_all(s.as_bytes())?;
-    }
+    let write_to_output = |output: &mut Write| -> Result<_, Error> {
+        // This way we don't have to spend time allocating a String for the whole
+        // Zalgo text and wasting memory in the process.
+        for c in zalgo::apply_rng_iter(rng, text.chars(), combined_kind, intensity) {
+            let mut buf = [0u8; 4];
+            let s = c.encode_utf8(&mut buf);
+            output.write_all(s.as_bytes())?;
+        }
 
-    output.write_all(b"\n")?;
-    output.flush()?;
+        output.write_all(b"\n")?;
+        output.flush()?;
+
+        Ok(())
+    };
+
+    if let Some(Output::Path(path)) = args.output {
+        let mut f = File::create(&path).map_err(|e| Error::CreateFile(path, e))?;
+        write_to_output(&mut f)?;
+    } else {
+        let stdout = io::stdout();
+        let mut handle = stdout.lock();
+        write_to_output(&mut handle)?;
+    };
 
     Ok(())
 }
