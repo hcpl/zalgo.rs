@@ -76,7 +76,8 @@ fn generate_counts<R: Rng>(rng: &mut R, intensity: Intensity) -> (usize, usize, 
             rng.gen_range(0, 16) / 4 + 1,
             rng.gen_range(0, 64) / 4 + 3,
         ),
-        Intensity::Random => unreachable!(),
+        Intensity::Random
+        | Intensity::Custom { .. } => unreachable!(),
     }
 }
 
@@ -101,6 +102,8 @@ impl<R, I> Iterator for ApplyRngIter<R, I>
                         let choice = *self.rng.choose(&choices).unwrap();
 
                         generate_counts(&mut self.rng, choice)
+                    } else if let Intensity::Custom { up, middle, down } = self.intensity {
+                        (up, middle, down)
                     } else {
                         generate_counts(&mut self.rng, self.intensity)
                     };
@@ -175,9 +178,26 @@ impl<R, I> Iterator for ApplyRngIter<R, I>
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        let (chars_lower, _) = self.chars.size_hint();
+        let (lower, upper) = self.chars.size_hint();
 
-        (chars_lower, None)
+        if let Intensity::Custom { up, middle, down } = self.intensity {
+            // We know for sure show many will be there
+            let new_lower = lower * (1 + up + middle + down);
+            let new_upper = upper.map(|u| u * (1 + up + middle + down));
+
+            (new_lower, new_upper)
+        } else {
+            // We have *at least* the same amount of chars from the original iterator.
+            (lower, None)
+        }
+    }
+
+    fn count(self) -> usize {
+        if let Intensity::Custom { up, middle, down } = self.intensity {
+            self.chars.count() * (1 + up + middle + down)
+        } else {
+            self.fold(0, |cnt, _| cnt + 1)
+        }
     }
 }
 

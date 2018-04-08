@@ -7,8 +7,10 @@ extern crate zalgo;
 use std::fmt;
 use std::fs::File;
 use std::io::{self, Read, Write};
+use std::num;
 use std::path::PathBuf;
 use std::process;
+use std::str;
 
 use colored::Colorize;
 use structopt::StructOpt;
@@ -37,7 +39,8 @@ struct Args {
     #[structopt(short = "d", long = "down")]
     down: bool,
 
-    /// Set mangling intensity
+    /// Set mangling intensity,
+    /// allowed values: mini, normal, maxi, random, custom(<up>,<middle>,<down>)
     #[structopt(short = "s", long = "intensity", parse(try_from_str = "parse_intensity"))]
     intensity: Option<Intensity>,
 
@@ -50,6 +53,33 @@ fn parse_intensity(s: &str) -> Result<Intensity, Error> {
         "mini" => Intensity::Mini,
         "normal" => Intensity::Normal,
         "maxi" => Intensity::Maxi,
+        "random" => Intensity::Random,
+        s if s.starts_with("custom(") && s.ends_with(")") => {
+            let mut params = s[7..s.len()-1].split(',');
+
+            let parse_param = |params: &mut str::Split<char>| -> Result<_, Error> {
+                let str_param = params
+                    .next()
+                    .ok_or_else(|| Error::ParseIntensity(s.into()))?
+                    .trim();
+
+                let param = str_param
+                    .parse::<usize>()
+                    .map_err(|e| Error::ParseInt(str_param.into(), e))?;
+
+                Ok(param)
+            };
+
+            let up = parse_param(&mut params)?;
+            let middle = parse_param(&mut params)?;
+            let down = parse_param(&mut params)?;
+
+            if params.next().is_some() {
+                return Err(Error::ParseIntensity(s.into()));
+            }
+
+            Intensity::Custom { up, middle, down }
+        },
         _ => return Err(Error::ParseIntensity(s.into())),
     };
 
@@ -60,9 +90,10 @@ fn parse_intensity(s: &str) -> Result<Intensity, Error> {
 #[derive(Debug)]
 enum Error {
     ParseIntensity(String),
+    ParseInt(String, num::ParseIntError),
     OpenFile(PathBuf, io::Error),
     CreateFile(PathBuf, io::Error),
-    Other(io::Error),
+    Io(io::Error),
 }
 
 impl fmt::Display for Error {
@@ -71,14 +102,17 @@ impl fmt::Display for Error {
             Error::ParseIntensity(ref string) => {
                 write!(f, "Couldn't parse {:?} as an intensity parameter", string)
             },
+            Error::ParseInt(ref str_param, ref pie) => {
+                write!(f, "Couldn't parse {:?} as an integer: {}", str_param, pie)
+            },
             Error::OpenFile(ref path, ref ioe) => {
-                write!(f, "Error when opening file {}: {}.", path.display(), ioe)
+                write!(f, "Error when opening file `{}`: {}.", path.display(), ioe)
             },
             Error::CreateFile(ref path, ref ioe) => {
-                write!(f, "Error when creating file {}: {}.", path.display(), ioe)
+                write!(f, "Error when creating file `{}`: {}.", path.display(), ioe)
             },
-            Error::Other(ref ioe) => {
-                write!(f, "Other IO error: {}", ioe)
+            Error::Io(ref ioe) => {
+                write!(f, "IO error: {}", ioe)
             },
         }
     }
@@ -86,7 +120,7 @@ impl fmt::Display for Error {
 
 impl From<io::Error> for Error {
     fn from(e: io::Error) -> Error {
-        Error::Other(e)
+        Error::Io(e)
     }
 }
 
@@ -153,7 +187,7 @@ fn main() {
     let args = Args::from_clap(&matches);
 
     if let Err(e) = run(args) {
-        eprintln!("{}: {}", "error".bold().red(), e);
+        eprintln!("{} {}", "error:".bold().red(), e);
         eprintln!("{}", matches.usage());
 
         process::exit(1);

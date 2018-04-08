@@ -151,6 +151,12 @@ pub enum Intensity {
     Maxi,
     /// Produce a randomized amount of Zalgo text.
     Random,
+    /// Produce a customized amount of Zalgo text.
+    Custom {
+        up: usize,
+        middle: usize,
+        down: usize,
+    },
 }
 
 /// Generates a `String` containing Zalgo text with thread-local random
