@@ -15,10 +15,14 @@ version = "0.2.0"
 bitflags = "^1.0"
 colored = { version = "^1.6", optional = true }
 rand = { version = "^0.4", default-features = false }
+# Skeptic is in [dependencies] and not [dev-dependencies] because
+# dev-dependencies are not allowed to be optional
+skeptic = { version = "^0.13", optional = true }
 structopt = { version = "^0.2", optional = true }
 
 [build-dependencies]
 rustc_version = "^0.2"
+skeptic = { version = "^0.13", optional = true }
 
 [dev-dependencies]
 lipsum = "^0.4"

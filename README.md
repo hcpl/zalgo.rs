@@ -6,7 +6,7 @@ Rust crate for generating Zalgo text.
 
 This features both a library and a binary, which can be used via:
 
-`cargo run --bin zalgo test text`
+`cargo run --bin zalgo --features build-binary -- test text`
 
 ### Zalgo
 
@@ -22,13 +22,13 @@ This features both a library and a binary, which can be used via:
 
 Add the following dependency to your Cargo.toml:
 
-```rust
-zalgo = "0.1"
+```toml
+zalgo = "0.2"
 ```
 
 And include it in your project:
 
-```rust
+```rust,skt-extern-crate-only
 extern crate zalgo;
 ```
 
@@ -36,10 +36,10 @@ extern crate zalgo;
 
 Generate Zalgo text with up/down (no middle) and mini definitions:
 
-```rust
+```rust,skt-all-code-in-main
 use zalgo::{CharKind, Intensity};
 
-let text = zalgo::gen("test", CharKind::UP | CharKind::DOWN, Intensity::Mini);
+let text = zalgo::apply("test", CharKind::UP | CharKind::DOWN, Intensity::Mini);
 ```
 
 To view more examples, check out the [examples] directory.

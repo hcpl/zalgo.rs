@@ -1,9 +1,11 @@
 extern crate rustc_version;
+#[cfg(feature = "skeptic")]
+extern crate skeptic;
 
 use rustc_version::{Version, version};
 
 
-fn main() {
+fn run_rustc_version() {
     let version = version().unwrap();
 
     if version >= Version::parse("1.26.0").unwrap() {
@@ -17,4 +19,16 @@ fn main() {
         //println!("cargo:rustc-cfg=stable_iterator_try_fold");
         println!("cargo:rustc-cfg=stable_iter_rfold");
     }
+}
+
+#[cfg(feature = "skeptic")]
+fn run_skeptic() {
+    skeptic::generate_doc_tests(&["README.md"]);
+}
+
+
+fn main() {
+    run_rustc_version();
+    #[cfg(feature = "skeptic")]
+    run_skeptic();
 }
