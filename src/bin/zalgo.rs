@@ -174,9 +174,16 @@ fn run(args: Args) -> Result<(), Error> {
         Box::new(io::stdout())
     };
 
-    let zalgoified_text = zalgo::apply(&text, combined_kind, intensity);
+    // This way we don't have to spend time allocating a String for the whole
+    // Zalgo text and wasting memory in the process.
+    for c in zalgo::apply_iter(text.chars(), combined_kind, intensity) {
+        let mut buf = [0u8; 4];
+        let s = c.encode_utf8(&mut buf);
+        output.write_all(s.as_bytes())?;
+    }
 
-    writeln!(output, "{}", zalgoified_text)?;
+    output.write_all(b"\n")?;
+    output.flush()?;
 
     Ok(())
 }
