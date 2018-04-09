@@ -10,7 +10,9 @@ use core::ops;
 ///
 /// [`unapply_iter`]: fn.unapply_iter.html
 #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
-#[derive(Clone, Debug)]
+// This should be the relevant issue: https://github.com/rust-lang/rust/pull/43690
+#[cfg_attr(fn_clone, derive(Clone))]
+#[derive(Debug)]
 pub struct UnapplyIter<I> {
     pub(crate) inner: iter::Filter<I, fn(&char) -> bool>,
 }

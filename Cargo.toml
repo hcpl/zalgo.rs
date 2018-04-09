@@ -61,3 +61,7 @@ name = "chars"
 
 [[example]]
 name = "is_zalgo"
+
+
+[package.metadata.docs.rs]
+features = ["nightly"]

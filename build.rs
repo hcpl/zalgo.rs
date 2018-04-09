@@ -8,12 +8,17 @@ use rustc_version::{Version, version};
 fn run_rustc_version() {
     let version = version().unwrap();
 
+    if version >= Version::parse("1.21.0").unwrap() {
+        // This should be the relevant issue: https://github.com/rust-lang/rust/pull/43690
+        println!("cargo:rustc-cfg=fn_clone");
+    }
+
     if version >= Version::parse("1.26.0").unwrap() {
         println!("cargo:rustc-cfg=stable_fused_iterator");
     }
 
     if version >= Version::parse("1.27.0").unwrap() {
-        // We won't be able to define `Iterator::try_fold` and `DoubleEndedIterator::try_fold`
+        // We won't be able to define `Iterator::try_fold` and `DoubleEndedIterator::try_rfold`
         // in stable anyway because both require a type parameter bounded by `ops::Try` which is
         // not going to stabilize yet.
         //println!("cargo:rustc-cfg=stable_iterator_try_fold");
