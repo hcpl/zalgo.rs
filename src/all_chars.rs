@@ -4,25 +4,6 @@ use core::iter;
 use {UP_CHARS, MIDDLE_CHARS, DOWN_CHARS};
 
 
-/// Returns an iterator of combined kinds of Zalgo `char`s. These are all of the
-/// `char`s used to create a generated Zalgo `String`.
-///
-/// # Examples
-///
-/// A basic usage:
-///
-/// ```rust
-/// let _ = zalgo::all_chars();
-///
-/// // You can then manually use this iterator for your own uses.
-/// ```
-pub fn all_chars() -> AllChars {
-    AllChars {
-        pos: 0,
-        pos_back: UP_CHARS.len() + MIDDLE_CHARS.len() + DOWN_CHARS.len(),
-    }
-}
-
 /// An iterator of combined kinds of Zalgo `char`s.
 ///
 /// This struct is created by the [`all_chars`] function. See its documentation
@@ -30,8 +11,8 @@ pub fn all_chars() -> AllChars {
 ///
 /// [`all_chars`]: fn.all_chars.html
 pub struct AllChars {
-    pos: usize,
-    pos_back: usize,
+    pub(crate) pos: usize,
+    pub(crate) pos_back: usize,
 }
 
 // Optimized implementations of various iterator-related methods

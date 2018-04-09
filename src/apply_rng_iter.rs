@@ -6,26 +6,6 @@ use rand::Rng;
 use {UP_CHARS, MIDDLE_CHARS, DOWN_CHARS, CharKind, Intensity, is_zalgo};
 
 
-/// Returns an [`Iterator`] of `char`s of generated Zalgo text with
-/// user-provided random generator.
-///
-/// The output is customizable via defining whether to include Zalgo text above
-/// the given string, in the middle of it, and below it.
-///
-/// The amount of Zalgo text can be (more or less) defined by the value of the
-/// `intensity` given. Read on the [`Intensity`] for more information.
-///
-/// [`Iterator`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html
-/// [`Intensity`]: enum.Intensity.html
-pub fn apply_rng_iter<R: Rng, I: Iterator<Item = char>>(
-    rng: R,
-    chars: I,
-    kind: CharKind,
-    intensity: Intensity,
-) -> ApplyRngIter<R, I> {
-    ApplyRngIter { rng, chars, kind, intensity, state: State::Free }
-}
-
 /// An iterator of `char`s that are output as `char`s from Zalgo-transformed
 /// text.
 ///
@@ -34,15 +14,15 @@ pub fn apply_rng_iter<R: Rng, I: Iterator<Item = char>>(
 ///
 /// [`apply_rng_iter`]: fn.apply_rng_iter.html
 pub struct ApplyRngIter<R, I> {
-    rng: R,
-    chars: I,
-    kind: CharKind,
-    intensity: Intensity,
+    pub(crate) rng: R,
+    pub(crate) chars: I,
+    pub(crate) kind: CharKind,
+    pub(crate) intensity: Intensity,
 
-    state: State,
+    pub(crate) state: State,
 }
 
-enum State {
+pub(crate) enum State {
     Free,
     GenUp {
         count_up: usize,

@@ -82,13 +82,13 @@ extern crate bitflags;
 extern crate rand;
 
 mod all_chars;
-pub use all_chars::{AllChars, all_chars};
+pub use all_chars::AllChars;
 
 mod apply_rng_iter;
-pub use apply_rng_iter::{ApplyRngIter, apply_rng_iter};
+pub use apply_rng_iter::ApplyRngIter;
 
 mod unapply_iter;
-pub use unapply_iter::{UnapplyIter, unapply_iter};
+pub use unapply_iter::UnapplyIter;
 
 #[cfg(all(feature = "alloc", not(feature = "std")))]
 use alloc::String;
@@ -127,6 +127,7 @@ pub static DOWN_CHARS: [char; 40] = [
     '͇', '͈', '͉', '͍', '͎', '͓', '͔', '͕', '͖', '͙', '͚', '̣',
 ];
 
+
 bitflags! {
     /// A definition of the character type to be used for retrieval.
     pub struct CharKind: u8 {
@@ -160,6 +161,27 @@ pub enum Intensity {
         down: usize,
     },
 }
+
+
+/// Returns an iterator of combined kinds of Zalgo `char`s. These are all of the
+/// `char`s used to create a generated Zalgo `String`.
+///
+/// # Examples
+///
+/// A basic usage:
+///
+/// ```rust
+/// let _ = zalgo::all_chars();
+///
+/// // You can then manually use this iterator for your own uses.
+/// ```
+pub fn all_chars() -> AllChars {
+    AllChars {
+        pos: 0,
+        pos_back: UP_CHARS.len() + MIDDLE_CHARS.len() + DOWN_CHARS.len(),
+    }
+}
+
 
 /// Generates a `String` containing Zalgo text with thread-local random
 /// generator.
@@ -349,6 +371,27 @@ pub fn apply_iter<I: Iterator<Item = char>>(
     apply_rng_iter(thread_rng(), chars, kind, intensity)
 }
 
+/// Returns an [`Iterator`] of `char`s of generated Zalgo text with
+/// user-provided random generator.
+///
+/// The output is customizable via defining whether to include Zalgo text above
+/// the given string, in the middle of it, and below it.
+///
+/// The amount of Zalgo text can be (more or less) defined by the value of the
+/// `intensity` given. Read on the [`Intensity`] for more information.
+///
+/// [`Iterator`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html
+/// [`Intensity`]: enum.Intensity.html
+pub fn apply_rng_iter<R: Rng, I: Iterator<Item = char>>(
+    rng: R,
+    chars: I,
+    kind: CharKind,
+    intensity: Intensity,
+) -> ApplyRngIter<R, I> {
+    ApplyRngIter { rng, chars, kind, intensity, state: apply_rng_iter::State::Free }
+}
+
+
 /// Removes Zalgo `char`s from the original string.
 ///
 /// *This function is available if Zalgo is built with the `"std"` or `"alloc"`
@@ -357,6 +400,16 @@ pub fn apply_iter<I: Iterator<Item = char>>(
 pub fn unapply(text: &str) -> String {
     unapply_iter(text.chars()).collect()
 }
+/// Returns an [`Iterator`] of non-Zalgo `char`s that remained from the original
+/// iterator.
+///
+/// [`Iterator`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html
+pub fn unapply_iter<I: Iterator<Item = char>>(chars: I) -> UnapplyIter<I> {
+    UnapplyIter {
+        inner: chars.filter(|c| !is_zalgo(*c)),
+    }
+}
+
 
 /// Determines whether a given `char` is a Zalgo `char`. This is checked by
 /// checking if a combination of the defined Zalgo `char`s contains the given

@@ -2,19 +2,6 @@ use core::iter;
 #[cfg(feature = "nightly")]
 use core::ops;
 
-use is_zalgo;
-
-
-
-/// Returns an [`Iterator`] of non-Zalgo `char`s that remained from the original
-/// iterator.
-///
-/// [`Iterator`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html
-pub fn unapply_iter<I: Iterator<Item = char>>(chars: I) -> UnapplyIter<I> {
-    UnapplyIter {
-        inner: chars.filter(|c| !is_zalgo(*c)),
-    }
-}
 
 /// An iterator of non-Zalgo `char`s that remained from the original iterator.
 ///
@@ -23,7 +10,7 @@ pub fn unapply_iter<I: Iterator<Item = char>>(chars: I) -> UnapplyIter<I> {
 ///
 /// [`unapply_iter`]: fn.unapply_iter.html
 pub struct UnapplyIter<I> {
-    inner: iter::Filter<I, fn(&char) -> bool>,
+    pub(crate) inner: iter::Filter<I, fn(&char) -> bool>,
 }
 
 // Simply delegate methods to `inner` which likely have good implementation
