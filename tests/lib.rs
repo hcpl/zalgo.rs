@@ -263,7 +263,7 @@ fn apply() {
     // It's not really possible to test the outputs, so just test whether they
     // work or not.
     let apply_batch = |intensity| {
-        for char_kind_bits in 0b000..0b111 {
+        for char_kind_bits in 0b000..0b1000 {
             let _ = zalgo::apply("t", CharKind::from_bits(char_kind_bits).unwrap(), intensity);
         }
     };

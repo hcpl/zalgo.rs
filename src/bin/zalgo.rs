@@ -22,18 +22,18 @@ use zalgo::{CharKind, Intensity};
 
 #[derive(Debug, StructOpt)]
 struct Args {
-    /// Read from specified input (default: stdin)
+    /// Read from specified input [default: -]
     #[structopt(short = "i", long = "input", parse(from_os_str = "parse_input"))]
     input: Option<Input>,
 
-    /// Write to specified output (default: stdout)
+    /// Write to specified output [default: -]
     #[structopt(short = "o", long = "output", parse(from_os_str = "parse_output"))]
     output: Option<Output>,
 
     /// Random number generator,
-    /// allowed values: chacha, isaac, isaac64, jitter, os, std, thread, xorshift (default: thread)
-    #[structopt(short = "r", long = "rng")]
-    rng: Option<String>,
+    /// allowed values: chacha, isaac, isaac64, jitter, os, std, thread, xorshift
+    #[structopt(short = "r", long = "rng", default_value = "thread")]
+    rng: String,
 
     /// Enable up chars
     #[structopt(short = "u", long = "up")]
@@ -48,9 +48,9 @@ struct Args {
     down: bool,
 
     /// Set mangling intensity,
-    /// allowed values: mini, normal, maxi, random, custom(<up>,<middle>,<down>) (default: mini)
-    #[structopt(short = "s", long = "intensity", parse(try_from_str = "parse_intensity"))]
-    intensity: Option<Intensity>,
+    /// allowed values: mini, normal, maxi, random, custom(<up>,<middle>,<down>)
+    #[structopt(short = "s", long = "intensity", default_value = "mini")]
+    intensity: String,
 
     /// Input text
     text: Option<String>,
@@ -194,7 +194,7 @@ impl From<jitter::TimerError> for Error {
 
 
 fn run(args: Args) -> Result<(), Error> {
-    let rng = args.rng.map(|s| parse_rng(&s)).unwrap_or_else(|| Ok(Box::new(rand::thread_rng())))?;
+    let rng = parse_rng(&args.rng)?;
 
     let combined_kind = {
         let mut k = CharKind::empty();
@@ -211,7 +211,7 @@ fn run(args: Args) -> Result<(), Error> {
         k
     };
 
-    let intensity = args.intensity.unwrap_or(Intensity::Mini);
+    let intensity = parse_intensity(&args.intensity)?;
 
     let read_from_stdin = || -> Result<_, Error> {
         let stdin = io::stdin();
