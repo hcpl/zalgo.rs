@@ -397,12 +397,45 @@ pub fn apply_rng_iter<R: Rng, I: Iterator<Item = char>>(
 ///
 /// *This function is available if Zalgo is built with the `"std"` or `"alloc"`
 /// feature.*
+///
+/// # Examples
+///
+/// ```rust
+/// # extern crate rand;
+/// # extern crate zalgo;
+/// use rand::Isaac64Rng;
+/// use zalgo::{CharKind, Intensity};
+///
+/// let rng = Isaac64Rng::new_unseeded();
+/// let intensity = Intensity::Custom { up: 100, middle: 100, down: 100 };
+/// let applied = zalgo::apply_rng(rng, "test", CharKind::all(), intensity);
+/// let unapplied = zalgo::unapply(&applied);
+///
+/// assert_eq!(&unapplied, "test");
+/// ```
 #[cfg(any(feature = "std", feature = "alloc"))]
 pub fn unapply(text: &str) -> String {
     unapply_iter(text.chars()).collect()
 }
+
 /// Returns an [`Iterator`] of non-Zalgo `char`s that remained from the original
 /// iterator.
+///
+/// # Examples
+///
+/// ```rust
+/// # extern crate rand;
+/// # extern crate zalgo;
+/// use rand::Isaac64Rng;
+/// use zalgo::{CharKind, Intensity};
+///
+/// let rng = Isaac64Rng::new_unseeded();
+/// let intensity = Intensity::Custom { up: 100, middle: 100, down: 100 };
+/// let applied = zalgo::apply_rng_iter(rng, "text".chars(), CharKind::all(), intensity);
+/// let unapplied = zalgo::unapply_iter(applied);
+///
+/// assert!(unapplied.eq("text".chars()));
+/// ```
 ///
 /// [`Iterator`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html
 pub fn unapply_iter<I: Iterator<Item = char>>(chars: I) -> UnapplyIter<I> {
