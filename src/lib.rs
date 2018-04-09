@@ -434,10 +434,10 @@ pub fn unapply(text: &str) -> String {
 /// # fn main() {
 /// let rng = Isaac64Rng::new_unseeded();
 /// let intensity = Intensity::Custom { up: 100, middle: 100, down: 100 };
-/// let applied = zalgo::apply_rng_iter(rng, "text".chars(), CharKind::all(), intensity);
+/// let applied = zalgo::apply_rng_iter(rng, "test".chars(), CharKind::all(), intensity);
 /// let unapplied = zalgo::unapply_iter(applied);
 ///
-/// assert!(unapplied.eq("text".chars()));
+/// assert!(unapplied.eq("test".chars()));
 /// # }
 /// ```
 ///

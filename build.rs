@@ -8,11 +8,6 @@ use rustc_version::{Version, version};
 fn run_rustc_version() {
     let version = version().unwrap();
 
-    if version >= Version::parse("1.21.0").unwrap() {
-        // This should be the relevant issue: https://github.com/rust-lang/rust/pull/43690
-        println!("cargo:rustc-cfg=fn_clone");
-    }
-
     if version >= Version::parse("1.26.0").unwrap() {
         println!("cargo:rustc-cfg=stable_fused_iterator");
     }

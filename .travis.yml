@@ -10,7 +10,7 @@ env:
 
 matrix:
   include:
-    - rust: 1.20.0
+    - rust: 1.21.0
       script:
         - cargo test -vv --no-default-features
         - cargo test -vv --features 'test-readme build-binary'
