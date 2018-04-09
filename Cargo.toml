@@ -49,5 +49,14 @@ doc = false
 required-features = ["build-binary"]
 
 [[example]]
+name = "all_chars"
+
+[[example]]
 name = "apply"
 required-features = ["std"]
+
+[[example]]
+name = "chars"
+
+[[example]]
+name = "is_zalgo"
