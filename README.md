@@ -37,7 +37,7 @@ extern crate zalgo;
 
 Generate Zalgo text with up/down (no middle) and mini definitions:
 
-```rust,skt-all-code-in-main
+```rust,skt-cfg-std-all-code-in-main
 use zalgo::{CharKind, Intensity};
 
 let text = zalgo::apply("test", CharKind::UP | CharKind::DOWN, Intensity::Mini);

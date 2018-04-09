@@ -4,11 +4,14 @@
 fn main() {{ }}
 ```
 
-```rust,skt-all-code-in-main
+```rust,skt-cfg-std-all-code-in-main
 extern crate zalgo;
 
 #[allow(unused_variables)]
 fn main() {{
-    {}
+    #[cfg(feature = "std")]
+    {{
+        {}
+    }}
 }}
 ```
