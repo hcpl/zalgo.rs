@@ -9,25 +9,27 @@ matrix:
   include:
     - rust: 1.20.0
       script:
-        - cargo --verbose test --no-default-features
-        - cargo --verbose test --features test-readme
+        - cargo test --verbose --no-default-features
+        - cargo test --verbose --features test-readme
 
     - rust: stable
       script:
-        - cargo --verbose test --no-default-features
-        - cargo --verbose test --features test-readme
+        - cargo test --verbose --no-default-features
+        - cargo test --verbose --features test-readme
 
     - rust: beta
       script:
-        - cargo --verbose test --no-default-features
-        - cargo --verbose test --features test-readme
+        - cargo test --verbose --no-default-features
+        - cargo test --verbose --features test-readme
 
     - rust: nightly
-      allow_failures: true
       script:
-        - cargo --verbose test --no-default-features
-        - cargo --verbose test --no-default-features --features alloc
-        - cargo --verbose test --features 'nightly test-readme'
+        - cargo test --verbose --no-default-features
+        - cargo test --verbose --no-default-features --features alloc
+        - cargo test --verbose --features 'nightly test-readme'
+
+  allow_failures:
+    - rust: nightly
 
 cache:
   directories:
