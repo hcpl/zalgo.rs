@@ -9,6 +9,8 @@ use core::ops;
 /// documentation for more details.
 ///
 /// [`unapply_iter`]: fn.unapply_iter.html
+#[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
+#[derive(Clone, Debug)]
 pub struct UnapplyIter<I> {
     pub(crate) inner: iter::Filter<I, fn(&char) -> bool>,
 }

@@ -10,6 +10,7 @@ use {UP_CHARS, MIDDLE_CHARS, DOWN_CHARS};
 /// for more details.
 ///
 /// [`all_chars`]: fn.all_chars.html
+#[derive(Clone, Debug)]
 pub struct AllChars {
     pub(crate) pos: usize,
     pub(crate) pos_back: usize,

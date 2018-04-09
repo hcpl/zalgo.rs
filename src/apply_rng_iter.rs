@@ -13,6 +13,8 @@ use {UP_CHARS, MIDDLE_CHARS, DOWN_CHARS, CharKind, Intensity, is_zalgo};
 /// documentation for more details.
 ///
 /// [`apply_rng_iter`]: fn.apply_rng_iter.html
+#[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
+#[derive(Clone, Debug)]
 pub struct ApplyRngIter<R, I> {
     pub(crate) rng: R,
     pub(crate) chars: I,
@@ -22,6 +24,7 @@ pub struct ApplyRngIter<R, I> {
     pub(crate) state: State,
 }
 
+#[derive(Clone, Debug)]
 pub(crate) enum State {
     Free,
     GenUp {
