@@ -22,20 +22,24 @@ extern crate zalgo;
 
 use zalgo::{UP_CHARS, MIDDLE_CHARS, DOWN_CHARS, CharKind, Intensity};
 
+
+const ALL_CHARS_COUNT: usize = 113;
+
 #[test]
-fn all_chars() {
-    let all_chars_count = 113;
-
-    assert_eq!(UP_CHARS.len() + MIDDLE_CHARS.len() + DOWN_CHARS.len(), all_chars_count);
-    assert_eq!(zalgo::all_chars().len(), all_chars_count);
-    assert_eq!(zalgo::all_chars().count(), all_chars_count);
-    assert_eq!(zalgo::all_chars().size_hint(), (all_chars_count, Some(all_chars_count)));
+fn all_chars_common_properties() {
+    assert_eq!(UP_CHARS.len() + MIDDLE_CHARS.len() + DOWN_CHARS.len(), ALL_CHARS_COUNT);
+    assert_eq!(zalgo::all_chars().len(), ALL_CHARS_COUNT);
+    assert_eq!(zalgo::all_chars().count(), ALL_CHARS_COUNT);
+    assert_eq!(zalgo::all_chars().size_hint(), (ALL_CHARS_COUNT, Some(ALL_CHARS_COUNT)));
     assert_eq!(zalgo::all_chars().last(), DOWN_CHARS.last().cloned());
+}
 
+#[test]
+fn all_chars_forwards_iteration() {
     let mut all_chars = zalgo::all_chars();
 
-    for i in 0..all_chars_count {
-        let remaining = all_chars_count - i;
+    for i in 0..ALL_CHARS_COUNT {
+        let remaining = ALL_CHARS_COUNT - i;
         assert_eq!(all_chars.len(), remaining);
         assert_eq!(all_chars.size_hint(), (remaining, Some(remaining)));
         assert!(all_chars.len() > 0);
@@ -66,10 +70,13 @@ fn all_chars() {
     assert_eq!(all_chars.len(), 0);
     #[cfg(feature = "nightly")]
     assert!(all_chars.is_empty());
+}
 
+#[test]
+fn all_chars_backwards_iteration() {
     let mut all_chars = zalgo::all_chars();
 
-    for i in (0..all_chars_count).rev() {
+    for i in (0..ALL_CHARS_COUNT).rev() {
         let remaining = i + 1;
         assert_eq!(all_chars.len(), remaining);
         assert_eq!(all_chars.size_hint(), (remaining, Some(remaining)));
@@ -102,6 +109,7 @@ fn all_chars() {
     #[cfg(feature = "nightly")]
     assert!(all_chars.is_empty());
 }
+
 
 #[test]
 fn char_kind() {
@@ -160,10 +168,93 @@ fn char_kind() {
 
 #[test]
 fn intensity() {
-    let _ = Intensity::Mini;
-    let _ = Intensity::Normal;
-    let _ = Intensity::Maxi;
-    let _ = Intensity::Random;
+    let intensity = Intensity::Mini;  // Any value will do the job
+
+    // Automatically detect new/removed variants by forcing compiler to use
+    // exhaustiveness checks for enums.
+    match intensity {
+        Intensity::Mini => (),
+        Intensity::Normal => (),
+        Intensity::Maxi => (),
+        Intensity::Random => (),
+        Intensity::Custom { .. } => (),
+    }
+}
+
+
+#[test]
+fn apply_rng_iter() {
+    let apply_compare = |text: &str, expected: &str, char_kind_bits, intensity| {
+        assert!(
+            zalgo::apply_rng_iter(
+                rand::ChaChaRng::new_unseeded(),
+                text.chars(),
+                CharKind::from_bits(char_kind_bits).unwrap(),
+                intensity,
+            ).eq(expected.chars())
+        );
+    };
+
+    let apply_batch = |intensity, expected_arr| {
+        for &(char_kind_bits, expected) in &expected_arr {
+            apply_compare("text", expected, char_kind_bits, intensity);
+        }
+    };
+
+    apply_batch(Intensity::Mini, [
+        (0b000, "text"),
+        (0b001, "tex̰̺̯͖̱t͓͕̤"),
+        (0b010, "t̵ex̨t"),
+        (0b011, "t̵e̯̲̰̺̯xͅt͍̱͓͟"),
+        (0b100, "te̓ͨ̇x̆̍͐t̓͌ͫ"),
+        (0b101, "te̓ͨ̇x̰̆̍͐ͅṯͫ"),
+        (0b110, "t̵eͨx͋̆̍͐ͧ͏t̨ͫ"),
+        (0b111, "t̵e̲̰̺̯͖ͨx̢̱͓̺͗̅̓͌t̜̠͆͑̃͊̂̂̌ͅ"),
+    ]);
+
+    apply_batch(Intensity::Normal, [
+        (0b000, "text"),
+        (0b001, "t͕e̯̲̰x̱͓̰͓͕̤ͅt̺͍̞̙͇"),
+        (0b010, "t̵͠ex̕͝t͏"),
+        (0b011, "ṱ̵͠e͏̺̯͖x͏͓͕̤͍̱͓t̙͇̖̖͙̗̦̳"),
+        (0b100, "t̓eͨx͋̆̍t̅"),
+        (0b101, "t̮̓ė̱͓̓ͤ͋̆x͍̞̙͇̖̓͌ͫ̔ͭͮt̳̂"),
+        (0b110, "t̵̓͠e̓ͤ͋̕x͗̅̓͟tͮ̽̈́̅͆͑̃͊"),
+        (0b111, "t̵̝̓͠e͖̱ͤ͋x̤͍̅͟t͇̽̈́̅"),
+    ]);
+
+    apply_batch(Intensity::Maxi, [
+        (0b000, "text"),
+        (0b001, "t͕̮̭̝̯̲̰̺̯͖̱e͓͕̤͍̱͓̺͍̞̙͇x̗̦̳̜̠͕̟͔̱̣̼͔̩ͅt̼̯͕̤"),
+        (0b010, "t̵e̴͏͏x̨t͟͟͟"),
+        (0b011, "t̵̮̭̝̯̲̰̺̯͖̱͓e̤͍̱͓̺͍̞̙͇͟x̧̦̳̜̠͕̟͔̱̣̼͔̩̞ͅt̨̤̼͕̥̗́"),
+        (0b100, "t̓͊̾̓ͨ̇̓ͤ͋̆̍e̅̓͌ͫ̔ͭͮx͆͑̃͊̂̂̌̀t̏̿̍͌̋"),
+        (0b101, "t͓̰͓͕̤͍̱͓̺͍̓͊̾̓ͨ̇̓ͤ͋̆̍ͅe̘͉̼̯͕̤̼͕̥̗̻̤̲̙̙͔͑̃͊̂̂̌̀͛̒ͥ̏̿̍͌̋͂̈̈́x̠̮̫͙̥̼͖̩̝̞͓̖̺̻̲̞̳̠͂̊̒ͪ̐͑͊͐̒͗̋̎̇͊ͧt͎̖̯͇̦͔͔̣̼̳̠͙͂̅͌̎̔̂̆̏"),
+        (0b110, "t̓͊̾̓ͨ̇̓ͤ͋̆̍͝e̡̓͌ͫ̔ͭx̨͆͑̃͊̂̂̌̀͟͟͞t̛̋͂̈̈́̉̃̾͒ͯ̓̋ͯ̔̎̑̎́̚͠͠"),
+        (0b111, "t̰͓͕̤͍̱͓̺͍̞̓͊̾̓ͨ̇̓ͤ͋̆̍͝ͅẽ̡̼̯͕̤̼͕̥̗̻̤̲̙̙͔̙̫͇͊̂̂̌̀͛̒ͥ̏̿̍͌̋͂̈̈́͟x̧͙̥̼ͪ̐͑͊͐̒͗̋̎̇͊ͧ̒̀ẗ̡͉͍̭̮͎̖̯͇̦͔́ͭͪ͂̑̂̾̉ͨ͊͛ͣ͂̅͢"),
+    ]);
+
+    apply_batch(Intensity::Random, [
+        (0b000, "text"),
+        (0b001, "t̮̭̝e̯͖̱͓ͅx͍̱͓̺͍̞̙͇̖̖͙̗̦t͕̟͔̱̣̼͔"),
+        (0b010, "text͏"),
+        (0b011, "t̮̭̝e͖̱͓̰͝ͅx̨̡͍̞̙͇̖̖͙̗̦̳͘t̟͔̱"),
+        (0b100, "t͊̾̓e͋̆̍͐ͧ͗̅̓xͮ̽̈́̅͆͑̃͊̂̂tͥ̏̿̍͌̋͂̈̈́̉"),
+        (0b101, "t̯̲̰͊̾̓ḛ͓͕̤͐ͧx̠͕̟̽̈́̅͆͑̃͊̂̂̌̀͛t͉̼͂̈̈́̉"),
+        (0b110, "t͊̾̓e͋̆̍͐ͧ͗̅̓͟x̽̈́̅͆͑̃͊̂̂̌̀͛͟͟͞t͂̈̈́̉͟"),
+        (0b111, "t̯̲̰͊̾̓ḛ͓͕̤͐ͧx͔̱̣̽̈́̅͆͑̃͊̂̂̌̀͛͟͟͞t̸̨͕̥̗̻̤̲̙̙͔̙̫͇̉̃̾́͘"),
+    ]);
+
+    apply_batch(Intensity::Custom { up: 100, middle: 100, down: 100 }, [
+        (0b000, "text"),
+        (0b001, "t̖̙͎͕̮̭̝̯̲̰̺̯͖̱͓̰͓͕̤͍̱͓̺͍̞̙͇̖̖͙̗̦̳̜̠͕̟͔̱̣̼͔̩̞̘͉̼̯͕̤̼͕̥̗̻̤̲̙̙͔̙̫͇̺̪̠̱̱̪͇͈̞̲͍͙̠̮̫͙̥̼͖̩̝̞͓̖̺̻̲̞̳̠̟͙ͅͅͅͅͅe̪̜͓͈̗͉͍̭̮͎̖̯͇̦͔͔̣̼̳̠͙̯̪̗͖̪̘͙̜͇̝̤͈̳͈̯̹̰̟̬͍͎̮̞͚͎̠̹̪̯͕̖͙̟̬̲̪͚͈͕̬̯̟̪̫͈͍͖̭̠̗͍̪͙̗̟̟̺̟͚͉̟̜̙͖͉̯͉̩̙̩̭̗̟̩͙̟ͅͅͅx̳͎̥͕̦̦̮̟̥̰̳̙̩͙̗̝͎̖̼͓͖͓͕̖̣͔̣͔̼̜͚̺̞̙̻͓̟̘͙̱̳̯̠̺̙͍̩̖͉̞̜̮͕̼̯͚̝͇̰̣̤̻͚̰̠̦̺̭͍̞̪̺̜͕̥̟̥̗̹̺̮̥͇͔̥̫͖̺̘͚̳̰̦̦̱͔̺ͅͅͅt̤̩̭͉̬̻͉͔̹̝͇̳̞̺̙̱̰̹̱̱̠̯͔̰̘͚̪̣̲̫̬̳̦͙̪͙̞̱̥͍̭͖̣̦̝̫͚̺̜̙̫̙̪͈̗̖̬̖̥̳͓̰̹͈̭̭̮̗͉̙͔͉͍͔̭͚̼̯͔̘̟͖͕͇̫̰̤͓̼̱͕̫͈̯̹̩̭̩͙ͅ"),
+        (0b010, "ţ̵̵̴̧͠͝͠͏͏̨̨̛̕͝͝͏̴̢̨̡̡̡̨̧̧̧̨̡͘̕̕͟͟͟͜͟͟͡͞͠͏̷҉̡̕͜͟҉̸̨́͘̕̕͏̶̵̴̷̨̧̛́̀͢͝͠͠͝͏̵̴́̕͢͜͠҉͝͏̷̧̢̧̢̢̧̡̀̀́͜͡͠͠͏̢̢͠é̷̡̧̛́̕͢͢͢͠͝͏̵̶̶̴̸̶̡̡̛̀́̀́͘̕͘͟͟͢͢͟͢͜͟͜͡͠҉̴͟҉̵̶̴̡̢̢̀͘͘͟͠͞͝͝͏̢̢͝͞͏̴̴̶̸̢̢̡̢̡̢̨̧̨̢̛̀́̀̀͘̕̕͘̕͘̕̕͢͟͟͜͞͏̷̢̡x҉̡͜͏̷̡͞͏̸͘͞҉̶̷̸̡̨͠҉̷̢͞͏̴̵̴̀͘͜͜͡͡҉̷̢̡̡̛͢͠͡͏́́҉̵̷̵̸̨̀͟͠͝͏̵̵̡̨̛̛́͝҉̸̴̵̸̴̷̵̶̵̵̨̨̧̛́̀̀́̀̀́̕͘͘͘͟͜͟͟͢͞͡͞͠͞͞t̸̢́̀͜͟͏̧̕͟҉̵̶̸̧̡̨̛͟͠͠҉͏̶̢̀́͘̕͡͞͏̵̴̴̧͟͝͞͏̸̶͟͠҉̴̶̶̨̢̛̛̛́͠͝͏̵͞͏̶̴̴̴̧̧̧̢̨́̀̕͢͟͝͡͝͝͏̴͢҉̧́̀͡͏̷̷̷̶̨̡̨̛͢͜͡͞͝"),
+        (0b011, "ţ̵̵̴̧͠͝͠͏͏̨̨̛̕͝͝͏̴̢̨̡̡̡̨̧̧̧̨̡͘̕̕͟͟͟͜͟͟͡͞͠͏̷҉̡̕͜͟҉̸̨́͘̕̕͏̶̵̴̷̨̧̛́̀͢͝͠͠͝͏̵̴́̕͢͜͠҉͝͏̷̧̢̧̢̢̧̡̀̀́͜͡͠͠͏̢̢̪̜͓͈̗͉͍̭̮͎̖̯͇̦͔͔̣̼̳̠͙̯̪̗͖̪̘͙̜͇̝̤͈̳͈̯̹̰̟̬͍͎̮̞͚͎̠̹̪̯͕̖͙̟̬̲̪͚͈͕̬̯̟̪̫͈͍͖̭̠̗͍̪͙̗̟̟̺̟͚͉̟̜̙͖͉̯͉̩̙̩̭̗̟̩͙̟͠ͅͅͅe҉̡͜͏̷̡͞͏̸͘͞҉̶̷̸̡̨͠҉̷̢͞͏̴̵̴̀͘͜͜͡͡҉̷̢̡̡̛͢͠͡͏́́҉̵̷̵̸̨̀͟͠͝͏̵̵̡̨̛̛́͝҉̸̴̵̸̴̷̵̶̵̵̨̨̧̛̤̩̭͉̬̻͉͔̹̝͇̳̞̺̙̱̰̹̱̱̠̯͔̰̘͚̪̣̲̫̬̳̦͙̪͙̞̱̥͍̭͖̣̦̝̫͚̺̜̙̫̙̪͈̗̖̬̖̥̳͓̰̹͈̭̭̮̗͉̙͔͉͍͔̭͚̼̯͔̘̟͖͕͇̫̰̤͓̼̱͕̫͈̯̹̩̭̩͙́̀̀́̀̀́̕͘͘͘͟͜͟͟͢͞͡͞͠͞͞ͅx̷̴̷̴̸̢̢̨͘̕͜͢͠͠҉̶̷̷̵̧̡̨̢̛̕͜͠͞͡͝҉҉҉҉̶̷̶̢̨̛͢͠͝͝͠͝͏҉̴̶̴̶̛̀̀́͘̕͟͟͜͟͏̶̵̷̡̡̡̛̛̛̀͘͠͏̢̨̀͢͞͏̴̵̷̨̧̛͢͜͢͝͏̸̧̛̻͚̭̭̬̻̼̤̝̪̹̮͈̻̲̦͖̮̤̻̞͉̥̟̼͎͉̬̳̥̳͉̜̤̥̳͕͕̠̮͎͉̥͎̖͍͔̱̞̳̗̝̺̙͓͎̻̹͎̖̤̖͔͔̖̺̝͍͍̙̥̬̹͈̟͍̻̩̲͚͓͍̲̣̭̗̲͕̬͙̞̰̻̼̘͉̼́̕͢͠ͅͅͅt͏̴̀̀͜͏҉̵͏̸̷́́̀̕͢҉͏̵̢̧̨͘͜͝͠͝҉̷̸̴̴̵̶̵̶̴̷̨̨̡̢̀́̀́̕̕͘͢͢͟͟͜͡͝͝҉̶̸̷̵̵̴̴̸̨̡̧̨̢̧̨̛̕̕͜͟͢͟͡͠͝͡҉̴̵̶̢̢̧̨̛̛̩̮̯͔̭̟̥̥̼̰̺̮̣̫̦͚̖̲̞͇͈͉̫͕̣̘͔̖̖̜̲̠̣̦̲̬̘̬̘̠̙̠̝̼̗̥̙̟̲̹̠̞̫̞̻̼̼͔̟͉̳͍̥͎̤̘̣̗͓̦̙̦͇̹̹͈͚̣̬̻͙͉̹̻͈̘̫̳͉̞̺̤̫̼̟̫̞̻̱͘̕͘͘͜͜ͅ"),
+        (0b100, "tͪ͐̉̓͊̾̓ͨ̇̓ͤ͋̆̍͐ͧ͗̅̓͌ͫ̔ͭͮ̽̈́̅͆͑̃͊̂̂̌̀͛̒ͥ̏̿̍͌̋͂̈̈́̉̃̾͒ͯ̓̋ͯ̔̎̑̎ͣ͐̿͐ͤ̒͂̊̒ͪ̐͑͊͐̒͗̋̎̇͊ͧ̒͊̿̏̃̈́̈́ͬͥ̈́ͭͪ͂̑̂̾̉ͨ͊͛̚eͣ͂̅͌̎̔̂̆̏̌̃͋̒̎ͤ͂ͦ̌̒̐͋͐̇̆͐ͬͧͮ̒ͯ͌̈͌̒̊͌͛̑ͫͬ̐̆͒̄͋̅̅͋̓̍̐̏́̇ͣ͋ͩ̑ͯͨ͊͐̀ͩ̎̾̆ͨ̎̂ͣ̐̎͊ͧ̀ͧ͒̍̐̿͐ͦͪ͒̐̃͊̉̊̄̈́̇͊̐̄͊͊̚̚x̌̉̔́ͫ̎͛͊͑͗̌̅̈ͧ̇́ͬ̃̋͐ͦͣͯ̔ͩ̀ͩͮ̆̿̒͂̾ͭ́̅̐͛̉̐ͪ̈͋ͨ̀̊̂͊̈ͪ͑̆̿͊́̆͋̒ͯ͆̓ͯͨ͆̎ͮ̆ͫͦͭ̿ͤ̑̔̐̔͛ͫͭ͂͛̔ͨͮͪ̿̾̿̌̒ͬͩͫ̽̍̿̿̚̚̚t͌̌ͦ̍ͥͥ͑̿̅͊̓̒̄̾̀ͣ̔͌ͣ͑̍͆ͨ̀͌̄͋ͣ͗̽ͤͯ̈ͫ͛͐ͧ̋ͪ̍̂̾ͦͩ̇́ͤ͋ͮ͂ͣ͂̊̊͗̇̔̑̍ͪ̉̅͗͐̓ͦ̆̏̇̍̅̀̍̇ͮ̈́͆̈́͆̀̄ͧ̆́͒ͮͩ͌̅̋̍̑̀̒̊̄ͦ̈͛̚"),
+        (0b101, "t̪̜͓͈̗͉͍̭̮͎̖̯͇̦͔͔̣̼̳̠͙̯̪̗͖̪̘͙̜͇̝̤͈̳͈̯̹̰̟̬͍͎̮̞͚͎̠̹̪̯͕̖͙̟̬̲̪͚͈͕̬̯̟̪̫͈͍͖̭̠̗͍̪͙̗̟̟̺̟͚͉̟̜̙͖͉̯͉̩̙̩̭̗̟̩͙̟ͪ͐̉̓͊̾̓ͨ̇̓ͤ͋̆̍͐ͧ͗̅̓͌ͫ̔ͭͮ̽̈́̅͆͑̃͊̂̂̌̀͛̒ͥ̏̿̍͌̋͂̈̈́̉̃̾͒ͯ̓̋ͯ̔̎̑̎ͣ͐̿͐ͤ̒͂̊̒ͪ̐͑͊͐̒͗̋̎̇͊ͧ̒͊̿̏̃̈́̈́ͬͥ̈́ͭͪ͂̑̂̾̉ͨ͊͛̚ͅͅͅě̤̩̭͉̬̻͉͔̹̝͇̳̞̺̙̱̰̹̱̱̠̯͔̰̘͚̪̣̲̫̬̳̦͙̪͙̞̱̥͍̭͖̣̦̝̫͚̺̜̙̫̙̪͈̗̖̬̖̥̳͓̰̹͈̭̭̮̗͉̙͔͉͍͔̭͚̼̯͔̘̟͖͕͇̫̰̤͓̼̱͕̫͈̯̹̩̭̩͙̉̔́ͫ̎͛͊͑͗̌̅̈ͧ̇́ͬ̃̋͐ͦͣͯ̔ͩ̀ͩͮ̆̿̒͂̾ͭ́̅̐͛̉̐ͪ̈͋ͨ̀̊̂͊̈ͪ͑̆̿͊́̆͋̒ͯ͆̓ͯͨ͆̎ͮ̆ͫͦͭ̿ͤ̑̔̐̔͛ͫͭ͂͛̔ͨͮͪ̿̾̿̌̒ͬͩͫ̽̍̿̿̚̚̚ͅx̻͚̭̭̬̻̼̤̝̪̹̮͈̻̲̦͖̮̤̻̞͉̥̟̼͎͉̬̳̥̳͉̜̤̥̳͕͕̠̮͎͉̥͎̖͍͔̱̞̳̗̝̺̙͓͎̻̹͎̖̤̖͔͔̖̺̝͍͍̙̥̬̹͈̟͍̻̩̲͚͓͍̲̣̭̗̲͕̬͙̞̰̻̼̘͉̼͌͐̄̔ͣ̋͆ͮ͂̏ͧ̄͒ͤ̆̍̈̎ͪ̎̾͋̿ͬ̔̐̽́̏ͣ͑̅ͩ̊̈́̋̄ͮͧ̎̎ͨͪ̽͊ͯ̏ͧ͌͒̔ͤ̈́ͬͥ͑̊̈́͐͋̒̀̈̃̔ͧͬͧ̋̍̎̉͗̎͆ͮ̏͂̓̍ͨ̌̋ͨͭ̌̾̓̏ͤ͊͑̋̐̐̉̚̚̚̚ͅͅͅt̩̮̯͔̭̟̥̥̼̰̺̮̣̫̦͚̖̲̞͇͈͉̫͕̣̘͔̖̖̜̲̠̣̦̲̬̘̬̘̠̙̠̝̼̗̥̙̟̲̹̠̞̫̞̻̼̼͔̟͉̳͍̥͎̤̘̣̗͓̦̙̦͇̹̹͈͚̣̬̻͙͉̹̻͈̘̫̳͉̞̺̤̫̼̟̫̞̻̱͋̃ͭͨ̇̍̿͂̍ͮ͊̾̐̀͂̀͂̓̎͋̿̓ͤ̾̽̓̅͆͋͐̆̄͛ͣ̌ͫ͌ͩͨ̀́̌ͩ̒̿ͯ̓ͥ̍̐͑͂̎̾͋̏ͩ̔̌͊ͪ͆́ͣͯͩ͆̓́̇̆͌̉̐͊̍̅̍͒̾͑͑ͩͤ͑̏ͫ̈́̃̐̋̇̄ͯ́̽ͦͯ̚̚ͅ"),
+        (0b110, "t̷̡̧̛ͪ͐̉̓͊̾̓ͨ̇̓ͤ͋̆̍͐ͧ͗̅̓͌ͫ̔ͭͮ̽̈́̅͆͑̃͊̂̂̌̀͛̒ͥ̏̿̍͌̋͂̈̈́̉̃̾͒ͯ̓̋ͯ̔̎̑̎ͣ͐̿͐ͤ̒͂̊̒ͪ̐͑͊͐̒͗̋̎̇͊ͧ̒͊̿̏̃̈́̈́ͬͥ̈́ͭͪ͂̑̂̾̉ͨ͊͛́́̚̕͢͢͢͠͝͏̵̶̶̴̸̶̡̡̛̀́̀́͘̕͘͟͟͢͢͟͢͜͟͜͡͠҉̴͟҉̵̶̴̡̢̢̀͘͘͟͠͞͝͝͏̢̢͝͞͏̴̴̶̸̢̢̡̢̡̢̨̧̨̢̛̀́̀̀͘̕̕͘̕͘̕̕͢͟͟͜͞͏̷̢̡ě̸̢̉̔́ͫ̎͛͊͑͗̌̅̈ͧ̇́ͬ̃̋͐ͦͣͯ̔ͩ̀ͩͮ̆̿̒͂̾ͭ́̅̐͛̉̐ͪ̈͋ͨ̀̊̂͊̈ͪ͑̆̿͊́̆͋̒ͯ͆̓ͯͨ͆̎ͮ̆ͫͦͭ̿ͤ̑̔̐̔͛ͫͭ͂͛̔ͨͮͪ̿̾̿̌̒ͬͩͫ̽̍̿̿́̀̚̚̚͜͟͏̧̕͟҉̵̶̸̧̡̨̛͟͠͠҉͏̶̢̀́͘̕͡͞͏̵̴̴̧͟͝͞͏̸̶͟͠҉̴̶̶̨̢̛̛̛́͠͝͏̵͞͏̶̴̴̴̧̧̧̢̨́̀̕͢͟͝͡͝͝͏̴͢҉̧́̀͡͏̷̷̷̶̨̡̨̛͢͜͡͞͝x̵̵̶̴̡̢̢͌͐̄̔ͣ̋͆ͮ͂̏ͧ̄͒ͤ̆̍̈̎ͪ̎̾͋̿ͬ̔̐̽́̏ͣ͑̅ͩ̊̈́̋̄ͮͧ̎̎ͨͪ̽͊ͯ̏ͧ͌͒̔ͤ̈́ͬͥ͑̊̈́͐͋̒̀̈̃̔ͧͬͧ̋̍̎̉͗̎͆ͮ̏͂̓̍ͨ̌̋ͨͭ̌̾̓̏ͤ͊͑̋̐̐̉́́̀́̚̚̚̚̕͘͘̕͜͟͟͢͢͜͞͝҉͜͜͠҉̵̴̶̡̀͘͢͜͡͡͏̢̧̕͜͏̴̡̧̢̧̛̀̀͘͟͡͞͏̷̵̢̛͘̕͟͢͢͝҉̷̶̴̨̢̛̀͘͟͟͢͡͏̵̵̸̨̢̢̢̛̀́͘̕͝͝͝͏̵̸̢ţ̵̸̵̵̴̸̸̸̸̴̧̢̨̧̧̢̛̛̛̛̛͋̃ͭͨ̇̍̿͂̍ͮ͊̾̐̀͂̀͂̓̎͋̿̓ͤ̾̽̓̅͆͋͐̆̄͛ͣ̌ͫ͌ͩͨ̀́̌ͩ̒̿ͯ̓ͥ̍̐͑͂̎̾͋̏ͩ̔̌͊ͪ͆́ͣͯͩ͆̓́̇̆͌̉̐͊̍̅̍͒̾͑͑ͩͤ͑̏ͫ̈́̃̐̋̇̄ͯ́̽ͦͯ́̀̀̀̀́̀̀́̚̚̕͘͘͘͜͟͢͢͟͢͜͟͟͟͡͡͡͠͠҉̵̷̶̧̡́̀̀̀̕͢͟͟͞͠͠͠͏̵̷̧̛̛̕͝͠͡҉͏̷̸̸̶̴̷̧̨̢̛̛̛̀͢͝͠͡҉̡͜"),
+        (0b111, "t̷̡̧̛ͪ͐̉̓͊̾̓ͨ̇̓ͤ͋̆̍͐ͧ͗̅̓͌ͫ̔ͭͮ̽̈́̅͆͑̃͊̂̂̌̀͛̒ͥ̏̿̍͌̋͂̈̈́̉̃̾͒ͯ̓̋ͯ̔̎̑̎ͣ͐̿͐ͤ̒͂̊̒ͪ̐͑͊͐̒͗̋̎̇͊ͧ̒͊̿̏̃̈́̈́ͬͥ̈́ͭͪ͂̑̂̾̉ͨ͊͛́́̚̕͢͢͢͠͝͏̵̶̶̴̸̶̡̡̛̀́̀́͘̕͘͟͟͢͢͟͢͜͟͜͡͠҉̴͟҉̵̶̴̡̢̢̀͘͘͟͠͞͝͝͏̢̢͝͞͏̴̴̶̸̢̢̡̢̡̢̨̧̨̢̛̀́̀̀͘̕̕͘̕͘̕̕͢͟͟͜͞͏̷̢̡̳͎̥͕̦̦̮̟̥̰̳̙̩͙̗̝͎̖̼͓͖͓͕̖̣͔̣͔̼̜͚̺̞̙̻͓̟̘͙̱̳̯̠̺̙͍̩̖͉̞̜̮͕̼̯͚̝͇̰̣̤̻͚̰̠̦̺̭͍̞̪̺̜͕̥̟̥̗̹̺̮̥͇͔̥̫͖̺̘͚̳̰̦̦̱͔̺ͅͅͅe̷̴̷̴̸̢̢̨͌̌ͦ̍ͥͥ͑̿̅͊̓̒̄̾̀ͣ̔͌ͣ͑̍͆ͨ̀͌̄͋ͣ͗̽ͤͯ̈ͫ͛͐ͧ̋ͪ̍̂̾ͦͩ̇́ͤ͋ͮ͂ͣ͂̊̊͗̇̔̑̍ͪ̉̅͗͐̓ͦ̆̏̇̍̅̀̍̇ͮ̈́͆̈́͆̀̄ͧ̆́͒ͮͩ͌̅̋̍̑̀̒̊̄ͦ̈͛̚͘̕͜͢͠͠҉̶̷̷̵̧̡̨̢̛̕͜͠͞͡͝҉҉҉҉̶̷̶̢̨̛͢͠͝͝͠͝͏҉̴̶̴̶̛̀̀́͘̕͟͟͜͟͏̶̵̷̡̡̡̛̛̛̀͘͠͏̢̨̀͢͞͏̴̵̷̨̧̛͢͜͢͝͏̸̧̛̻͚̭̭̬̻̼̤̝̪̹̮͈̻̲̦͖̮̤̻̞͉̥̟̼͎͉̬̳̥̳͉̜̤̥̳͕͕̠̮͎͉̥͎̖͍͔̱̞̳̗̝̺̙͓͎̻̹͎̖̤̖͔͔̖̺̝͍͍̙̥̬̹͈̟͍̻̩̲͚͓͍̲̣̭̗̲͕̬͙̞̰̻̼̘͉̼́̕͢͠ͅͅͅx̵̸̵̵̴̸̸̸̸̴̧̧̢̨̧̧̢̛̛̛̛̛͋̃ͭͨ̇̍̿͂̍ͮ͊̾̐̀͂̀͂̓̎͋̿̓ͤ̾̽̓̅͆͋͐̆̄͛ͣ̌ͫ͌ͩͨ̀́̌ͩ̒̿ͯ̓ͥ̍̐͑͂̎̾͋̏ͩ̔̌͊ͪ͆́ͣͯͩ͆̓́̇̆͌̉̐͊̍̅̍͒̾͑͑ͩͤ͑̏ͫ̈́̃̐̋̇̄ͯ́̽ͦͯ́̀̀̀̀́̀̀́̚̚̕͘͘͘͜͟͢͢͟͢͜͟͟͟͡͡͡͠͠҉̵̷̶̧̡́̀̀̀̕͢͟͟͞͠͠͠͏̵̷̧̛̛̕͝͠͡҉͏̷̸̸̶̴̷̧̨̢̛̛̛̀͢͝͠͡҉̡̬̲̣̟̯̠̞̦͓͉̗͍͇̭̦̪͍̭̦̱̬͕͎̰̣̲̮̣͎̺͔͔̥͓̣̙̤͖̝̘͙̥̩͕̜̰̗͇̩̺͔̫͍̩̱̗͇͚̺̲̼͇̮͙̙͎͖͖̰̰͙͈̟͎̤̙̞͕̹̲̣̝͇̙̖̼̙̥̹͈̦͚̞̼̭̼̖͉̭͚͜t̸̴̵̵̡̧̢̛̾̒̾̌̓́́͂̆̓͊ͯ̍ͧ̿̌̃̓̈́͐̓̏͒̓̈̏̾̋͂͛͌̇̽ͯ̆̎̿ͣͭ̑ͩ̽̓ͬ͐̓̽̎͋͗̂̇ͫ̉̆̓̉ͫ̽̈́̓̃ͭͨͯ͊ͨ̃ͦ̑̂̈̂̋̀͐̀̎͆͌̐̌͒̓̇̎̆ͥͭ͒̒ͦ͋ͬ̌̒̍͛̀̀̀̚̚̕͘͢͢͜͜͞͞͠͝͡͏̡͜͏̸͘͘͢҉́̕͢͠͡҉͢͡͏̷͡͝͞͝͡͏̸̵̡́͘̕͝͞҉̸̵̶̸̶̴̸̵̨̢̢̢̛̛́̀̀͘̕̕̕͝͞͞͠͝҉̷̷̵̡̨̨̨̧͟͜҉̷̷̡̼̣̞̹̥͎̞̞̙̙̝̖͓̬̪̝̣̜̰̭̥͍̘͍͍͉̙̮̭̦͎̙̲̘̰̗̼͓͔̙̱͚̥̩̲̗̯̦̦͚̲̰͉̫̪̻̩̟͎͚̣̣̹̖͖͙̺̬̤̪̼̯̭̖̠̹̻̱̯̜͓͍͇͉͎̲͇͙̘͖̻͚̱͎̻͉͎̕͟͟ͅͅͅ"),
+    ]);
 }
 
 #[cfg(feature = "std")]
@@ -171,41 +262,17 @@ fn intensity() {
 fn apply() {
     // It's not really possible to test the outputs, so just test whether they
     // work or not.
-    let _ = zalgo::apply("t", CharKind::from_bits(0b000).unwrap(), Intensity::Mini);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b001).unwrap(), Intensity::Mini);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b010).unwrap(), Intensity::Mini);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b100).unwrap(), Intensity::Mini);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b011).unwrap(), Intensity::Mini);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b101).unwrap(), Intensity::Mini);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b110).unwrap(), Intensity::Mini);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b111).unwrap(), Intensity::Mini);
+    let apply_batch = |intensity| {
+        for char_kind_bits in 0b000..0b111 {
+            let _ = zalgo::apply("t", CharKind::from_bits(char_kind_bits).unwrap(), intensity);
+        }
+    };
 
-    let _ = zalgo::apply("t", CharKind::from_bits(0b000).unwrap(), Intensity::Normal);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b001).unwrap(), Intensity::Normal);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b010).unwrap(), Intensity::Normal);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b100).unwrap(), Intensity::Normal);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b011).unwrap(), Intensity::Normal);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b101).unwrap(), Intensity::Normal);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b110).unwrap(), Intensity::Normal);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b111).unwrap(), Intensity::Normal);
-
-    let _ = zalgo::apply("t", CharKind::from_bits(0b000).unwrap(), Intensity::Maxi);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b001).unwrap(), Intensity::Maxi);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b010).unwrap(), Intensity::Maxi);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b100).unwrap(), Intensity::Maxi);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b011).unwrap(), Intensity::Maxi);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b101).unwrap(), Intensity::Maxi);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b110).unwrap(), Intensity::Maxi);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b111).unwrap(), Intensity::Maxi);
-
-    let _ = zalgo::apply("t", CharKind::from_bits(0b000).unwrap(), Intensity::Random);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b001).unwrap(), Intensity::Random);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b010).unwrap(), Intensity::Random);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b100).unwrap(), Intensity::Random);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b011).unwrap(), Intensity::Random);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b101).unwrap(), Intensity::Random);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b110).unwrap(), Intensity::Random);
-    let _ = zalgo::apply("t", CharKind::from_bits(0b111).unwrap(), Intensity::Random);
+    apply_batch(Intensity::Mini);
+    apply_batch(Intensity::Normal);
+    apply_batch(Intensity::Maxi);
+    apply_batch(Intensity::Random);
+    apply_batch(Intensity::Custom { up: 100, middle: 100, down: 100 });
 
     // Test that passing a String works.
     let _ = zalgo::apply(&String::from("t"), CharKind::empty(), Intensity::Random);

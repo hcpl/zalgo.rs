@@ -40,7 +40,7 @@ nightly = []
 
 # Features that affect tools around the library
 build-binary = ["std", "colored", "structopt"]
-test-readme = ["skeptic", "version-sync"]
+test-readme = ["std", "skeptic", "version-sync"]
 
 
 [[bin]]
