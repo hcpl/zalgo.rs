@@ -2,12 +2,14 @@
 use core::iter;
 
 use rand::Rng;
+#[cfg(feature = "std")]
+use rand::ThreadRng;
 
 use {UP_CHARS, MIDDLE_CHARS, DOWN_CHARS, CharKind, Intensity, is_zalgo};
 
 
-/// An iterator of `char`s that are output as `char`s from Zalgo-transformed
-/// text.
+/// An iterator of `char`s from Zalgo-transformed text produced by a provided
+/// random generator.
 ///
 /// This struct is created by the [`apply_rng_iter`] function. See its
 /// documentation for more details.
@@ -41,6 +43,20 @@ pub(crate) enum State {
     },
     Finished,
 }
+
+/// An iterator of `char`s from Zalgo-transformed text produced by a
+/// thread-local random generator.
+///
+/// This struct is created by the [`apply_iter`] function. See its documentation
+/// for more details.
+///
+/// *This type is available if Zalgo is built with the `"std"` feature.*
+///
+/// [`apply_iter`]: fn.apply_iter.html
+#[cfg(feature = "std")]
+#[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
+pub type ApplyIter<I> = ApplyRngIter<ThreadRng, I>;
+
 
 fn generate_counts<R: Rng>(rng: &mut R, intensity: Intensity) -> (usize, usize, usize) {
     match intensity {

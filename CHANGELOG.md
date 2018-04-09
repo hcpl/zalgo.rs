@@ -15,7 +15,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     chars;
   * `apply_rng` equivalent to `apply` but also accepts a `R: Rng` as the first parameter;
   * `apply_iter` equivalent to `apply_rng_iter` except without the first `R: Rng` parameter and uses
-    `ThreadRng` internally like `apply`; returns `ApplyRngIter<ThreadRng, I>`.
+    `ThreadRng` internally like `apply`; returns `ApplyIter<I>`.
 - Two functions of `unapply*` family:
   * `unapply` which removes Zalgo chars from the input `&str` and returns a `String`;
   * `unapply_iter` which removes Zalgo chars from the input `Iterator<Item = char>` and returns

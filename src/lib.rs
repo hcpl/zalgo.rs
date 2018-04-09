@@ -86,6 +86,8 @@ pub use all_chars::AllChars;
 
 mod apply_rng_iter;
 pub use apply_rng_iter::ApplyRngIter;
+#[cfg(feature = "std")]
+pub use apply_rng_iter::ApplyIter;
 
 mod unapply_iter;
 pub use unapply_iter::UnapplyIter;
@@ -93,10 +95,9 @@ pub use unapply_iter::UnapplyIter;
 #[cfg(all(feature = "alloc", not(feature = "std")))]
 use alloc::String;
 
-#[cfg(any(feature = "std", feature = "alloc"))]
 use rand::Rng;
 #[cfg(feature = "std")]
-use rand::{ThreadRng, thread_rng};
+use rand::thread_rng;
 
 
 pub static DESCRIPTION: &str = "\
@@ -367,7 +368,7 @@ pub fn apply_iter<I: Iterator<Item = char>>(
     chars: I,
     kind: CharKind,
     intensity: Intensity
-) -> ApplyRngIter<ThreadRng, I> {
+) -> ApplyIter<I> {
     apply_rng_iter(thread_rng(), chars, kind, intensity)
 }
 
