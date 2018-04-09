@@ -1,9 +1,10 @@
 [package]
 authors = ["Zeyla Hellyer <zeylahellyer@gmail.com>"]
-description = "A crate for generating Zalgo text with defined parameters."
+description = "A crate for manipulating Zalgo text."
 documentation = "http://docs.rs/zalgo"
 homepage = "https://github.com/zeyla/zalgo.rs"
 keywords = ["zalgo", "no_std"]
+categories = ["no-std"]
 license = "ISC"
 name = "zalgo"
 readme = "README.md"

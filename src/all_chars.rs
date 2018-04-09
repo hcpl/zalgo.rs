@@ -44,7 +44,8 @@ impl Iterator for AllChars {
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        (self.len(), Some(self.len()))
+        let len = self.len();
+        (len, Some(len))
     }
 
     fn count(self) -> usize {
@@ -82,7 +83,7 @@ impl Iterator for AllChars {
             return Some(DOWN_CHARS[pos]);
         }
 
-        unreachable!();
+        unreachable!("pos >= DOWN_CHARS.len(): {} >= {}", pos, DOWN_CHARS.len());
     }
 }
 
@@ -126,7 +127,7 @@ impl DoubleEndedIterator for AllChars {
             return Some(DOWN_CHARS[pos_back]);
         }
 
-        unreachable!();
+        unreachable!("pos_back >= DOWN_CHARS.len(): {} >= {}", pos_back, DOWN_CHARS.len());
     }
 }
 

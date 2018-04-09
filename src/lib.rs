@@ -333,7 +333,7 @@ pub fn apply_rng<R: Rng>(
 ///
 /// This function uses [`rand::thread_rng`] under the hood which contiributes to
 /// its non-determinism. For reproducible results (such as when performing
-/// tests) or when other random generator is needed use [`apply_rng_ter`]
+/// tests) or when other random generator is needed use [`apply_rng_iter`]
 /// instead and provide it a random generator of your choice.
 ///
 /// [`Iterator`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html
