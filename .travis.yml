@@ -1,20 +1,36 @@
 language: rust
 
-rust:
-  - 1.20.0
-  - stable
-  - beta
-  - nightly
-
 sudo: false
 
 os:
   - linux
+
+matrix:
+  include:
+    - rust: 1.20.0
+      script:
+        - cargo --verbose test --no-default-features
+        - cargo --verbose test --features test-readme
+
+    - rust: stable
+      script:
+        - cargo --verbose test --no-default-features
+        - cargo --verbose test --features test-readme
+
+    - rust: beta
+      script:
+        - cargo --verbose test --no-default-features
+        - cargo --verbose test --features test-readme
+
+    - rust: nightly
+      allow_failures: true
+      script:
+        - cargo --verbose test --no-default-features
+        - cargo --verbose test --no-default-features --features alloc
+        - cargo --verbose test --features 'nightly test-readme'
 
 cache:
   directories:
     - $TRAVIS_BUILD_DIR/target
     - $HOME/.cargo
 
-script:
-  - cargo test
