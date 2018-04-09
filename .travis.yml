@@ -5,28 +5,31 @@ sudo: false
 os:
   - linux
 
+env:
+  - RUST_BACKTRACE=1
+
 matrix:
   include:
     - rust: 1.20.0
       script:
-        - cargo test --verbose --no-default-features
-        - cargo test --verbose --features test-readme
+        - cargo test -vv --no-default-features
+        - cargo test -vv --features 'test-readme build-binary'
 
     - rust: stable
       script:
-        - cargo test --verbose --no-default-features
-        - cargo test --verbose --features test-readme
+        - cargo test -vv --no-default-features
+        - cargo test -vv --features 'test-readme build-binary'
 
     - rust: beta
       script:
-        - cargo test --verbose --no-default-features
-        - cargo test --verbose --features test-readme
+        - cargo test -vv --no-default-features
+        - cargo test -vv --features 'test-readme build-binary'
 
     - rust: nightly
       script:
-        - cargo test --verbose --no-default-features
-        - cargo test --verbose --no-default-features --features alloc
-        - cargo test --verbose --features 'nightly test-readme'
+        - cargo test -vv --no-default-features
+        - cargo test -vv --no-default-features --features alloc
+        - cargo test -vv --features 'nightly test-readme build-binary'
 
   allow_failures:
     - rust: nightly
