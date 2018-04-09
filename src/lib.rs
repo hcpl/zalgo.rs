@@ -406,12 +406,14 @@ pub fn apply_rng_iter<R: Rng, I: Iterator<Item = char>>(
 /// use rand::Isaac64Rng;
 /// use zalgo::{CharKind, Intensity};
 ///
+/// # fn main() {
 /// let rng = Isaac64Rng::new_unseeded();
 /// let intensity = Intensity::Custom { up: 100, middle: 100, down: 100 };
 /// let applied = zalgo::apply_rng(rng, "test", CharKind::all(), intensity);
 /// let unapplied = zalgo::unapply(&applied);
 ///
 /// assert_eq!(&unapplied, "test");
+/// # }
 /// ```
 #[cfg(any(feature = "std", feature = "alloc"))]
 pub fn unapply(text: &str) -> String {
@@ -429,12 +431,14 @@ pub fn unapply(text: &str) -> String {
 /// use rand::Isaac64Rng;
 /// use zalgo::{CharKind, Intensity};
 ///
+/// # fn main() {
 /// let rng = Isaac64Rng::new_unseeded();
 /// let intensity = Intensity::Custom { up: 100, middle: 100, down: 100 };
 /// let applied = zalgo::apply_rng_iter(rng, "text".chars(), CharKind::all(), intensity);
 /// let unapplied = zalgo::unapply_iter(applied);
 ///
 /// assert!(unapplied.eq("text".chars()));
+/// # }
 /// ```
 ///
 /// [`Iterator`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html
